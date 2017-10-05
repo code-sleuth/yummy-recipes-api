@@ -1,0 +1,17 @@
+language: python
+python:
+  - 3.6.2
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install unittest2
+env:pip insta
+  - COVERAGE_FILE=".coverage"
+services:
+  - postgresql
+before_script:
+  - "psql -c 'create database flask_api;' -U postgres"
+script:
+  - 'python manage.py test --coverage && coverage report'
+after_success:
+  - coveralls
