@@ -12,6 +12,6 @@ services:
 before_script:
   - "psql -c 'create database flask_api;' -U postgres"
 script:
-  - nosetests --with-coverage --cover-erase --cover-package=tests --cover-html
+  - nosetests --with-coverage --cover-erase --cover-package=tests
 after_success:
   - coveralls
