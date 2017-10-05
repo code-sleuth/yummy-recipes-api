@@ -13,7 +13,7 @@ def set_app():
     app.config['FLASK_APP'] = "main_app.py"
     app.config['SECRET'] = "i wont tell if you do not"
     app.config['APP_SETTINGS'] = "development"
-    app.config['DATABASE_URL'] = "postgres://postgres:@localhost/flask-api"
+    app.config['DATABASE_URL'] = "postgres://postgres:@localhost/flask_api"
     app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://postgres:@localhost/flask_api"
     app.config['TESTING'] = True
     db.init_app(app)
