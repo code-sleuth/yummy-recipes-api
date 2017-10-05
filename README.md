@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/code-sleuth/yummy-recipes-api/badge.svg?branch=dev&cacheBuster=1)](https://coveralls.io/github/code-sleuth/yummy-recipes-api?branch=dev)
+[![Build Status](https://travis-ci.org/code-sleuth/yummy-recipes-api.svg?branch=dev&cacheBuster=1)](https://travis-ci.org/code-sleuth/yummy-recipes-api)
 [![Code Climate](https://codeclimate.com/github/code-sleuth/yummy-recipes-api/badges/gpa.svg)](https://codeclimate.com/github/code-sleuth/yummy-recipes-api)
 
 # **Yummy Recipes API**
