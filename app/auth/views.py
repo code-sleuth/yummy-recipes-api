@@ -50,7 +50,7 @@ class LoginView(MethodView):
         # Handle POST request for this view. Url ---> /auth/login
         try:
             post_data = request.get_json(force=True)
-            # Get the user object using their email (unique to every user)
+            # Get the user object using their username (unique to every user)
             user = User.query.filter_by(username=post_data['username']).first()
             user_obj = User(username=post_data['username'], fullname=post_data['fullname'],
                             password=post_data['password'])

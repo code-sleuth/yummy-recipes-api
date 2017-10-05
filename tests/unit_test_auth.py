@@ -3,7 +3,7 @@ import json
 from app import set_app, db
 
 
-# Test case for the authentication blueprint
+# Test cases for the authentication blueprint
 class AuthTestCase(unittest.TestCase):
     # Set up test variables
     def setUp(self):
@@ -37,7 +37,7 @@ class AuthTestCase(unittest.TestCase):
         res = self.client().post('/auth/register', data=json.dumps(self.user_details))
         print(res)
         self.assertEqual(res.status_code, 201)
-        second_res = self.client().post('/auth/register', data=self.user_details)
+        second_res = self.client().post('/auth/register', data=json.dumps(self.user_details))
         self.assertEqual(second_res.status_code, 202)
         # get the results returned in json format
         result = json.loads(second_res.data.decode())
@@ -50,12 +50,12 @@ class AuthTestCase(unittest.TestCase):
         login_res = self.client().post('/auth/login', data=json.dumps(self.user_details))
         print(login_res)
         # get the results in json format
-        # result = json.loads(login_res.data.decode())
-        # # Test that the response contains success message
-        # self.assertEqual(result['message'], "You logged in successfully.")
-        # # Assert that the status code is equal to 200
-        # self.assertEqual(login_res.status_code, 200)
-        # self.assertTrue(result['access_token'])
+        result = json.loads(login_res.data.decode())
+        # Test that the response contains success message
+        self.assertEqual(result['message'], "You logged in successfully.")
+        # Assert that the status code is equal to 200
+        self.assertEqual(login_res.status_code, 200)
+        self.assertTrue(result['access_token'])
 
     def test_unknown_user_login(self):
         # Test non-registered users cannot login.
@@ -65,11 +65,10 @@ class AuthTestCase(unittest.TestCase):
             'fullname': 'you are',
             'password': 'nope'
         }
-        # send a POST request to /auth/login with the data above
+        # send a POST request to /auth/login with the invalid data above
         res = self.client().post('/auth/login', data=json.dumps(user_not_in_db))
         # get the result in json
         result = json.loads(res.data.decode())
-
         # assert that this response must contain an error message
         # and an error status code 401(Unauthorized)
         self.assertEqual(res.status_code, 401)

@@ -1,0 +1,15 @@
+language: python
+python:
+  - 3.6.2
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install unittest2
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database flask-api;' -U postgres
+script:
+  - nosetests --with-coverage
+after_success:
+  - coveralls

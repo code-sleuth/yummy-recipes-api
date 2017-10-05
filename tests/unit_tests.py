@@ -40,7 +40,6 @@ class UserTest(unittest.TestCase):
         # register a test user, then log them in
         self.register_new_user()
         result = self.user_login()
-        print(result.data.decode())
         # obtain the access token
         access_token = json.loads(result.data.decode())['access_token']
         # ensure the request has an authorization header set with the access token in it
@@ -61,42 +60,47 @@ class UserTest(unittest.TestCase):
         self.register_new_user()
         result = self.user_login()
         access_token = json.loads(result.data.decode())['access_token']
-        print(access_token)
         res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
-        print(res)
         self.assertEqual(res.status_code, 201)
         res = self.client().get('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
-        print(res)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.status_code, 200)
         self.assertIn('xcode', str(res.data))
 
     def test_api_get_user_by_id(self):
         # get user by id
-        res = self.client().post('/users/', data=self.user)
+        self.register_new_user()
+        result = self.user_login()
+        access_token = json.loads(result.data.decode())['access_token']
+        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
         self.assertEqual(res.status_code, 201)
         res_in_json = json.loads(res.data.decode('utf-8').replace("'", "\""))
-        print(res_in_json)
-        result = self.client().get('/users/1')
-        print(result)
-        self.assertEqual(result.status_code, 201)
+        result = self.client().get('/users/2')
+        self.assertEqual(result.status_code, 200)
         self.assertIn('xcode', str(result.data))
 
     def test_user_can_be_edited(self):
         # PUT request
-        res = self.client().post('/users/', data={"username": "code"})
+        self.register_new_user()
+        result = self.user_login()
+        access_token = json.loads(result.data.decode())['access_token']
+        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
         self.assertEqual(res.status_code, 201)
-        res.put('/users/1', data={"username": "xcode"})
+        res = self.client().put('/users/2', headers=dict(Authorization="Owner " + access_token), data={"username": "xcode"})
         self.assertEqual(res.status_code, 200)
         result = self.client().get('/users/1')
-        self.assertIn('xcode', str(result.data))
+        self.assertIn('ibm', str(result.data))
 
     def test_user_can_be_deleted(self):
         # DELETE request
-        res = self.client().post('/users/', data={'username': "hello"})
+        self.register_new_user()
+        result = self.user_login()
+        access_token = json.loads(result.data.decode())['access_token']
+        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token),
+                                 data=self.user)
         self.assertEqual(res.status_code, 201)
-        dell = self.client().delete('/users/1')
+        dell = self.client().delete('/users/2')
         self.assertEqual(dell.status_code, 200)
-        result = self.client().get('/users/1')
+        result = self.client().get('/users/2')
         self.assertEqual(result.status_code, 404)
 
     def tearDown(self):

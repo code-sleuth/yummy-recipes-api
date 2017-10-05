@@ -44,14 +44,11 @@ def set_app():
                 obj = {
                     'id': user.id,
                     'username': user.username,
-                    'fullname': user.fullname,
-                    'password': user.password
+                    'fullname': user.fullname
                 }
-                results.append(obj)
-
-            response = jsonify(results)
-            response.status.code = 200
-            return response
+            results.append(obj)
+            response = json.dumps(results)
+            return response, 200
 
     @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
     def edit_by_id(id, **kwargs):
@@ -67,14 +64,14 @@ def set_app():
             }, 200
 
         elif request.method == "PUT":
-            username = str(request.data.get('username', ''))
+            username = str(request.data.get('username'))
+            print(username)
             user.username = username
             user.save()
             response = jsonify({
                 'id': user.id,
                 'username': user.username,
-                'fullname': user.fullname,
-                'password': user.password
+                'fullname': user.fullname
             })
             response.status_code = 200
             return response
@@ -83,8 +80,7 @@ def set_app():
             response = jsonify({
                 'id': user.id,
                 'username': user.username,
-                'fullname': user.fullname,
-                'password': user.password
+                'fullname': user.fullname
             })
             response.status_code = 200
             return response
