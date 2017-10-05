@@ -35,6 +35,22 @@ A RESTful API for yummy recipes
     ``` 
     pip install -r requirements.txt 
     ```
+    
+    #### Run migration
+    
+    ```
+        python manage.py db init
+    ```
+    
+    ```
+        python manage.py db migrate
+    ```
+    
+    ```
+        python manage.py db upgrade
+    ```
+    
+    
 4. Run the api
 
     ```
@@ -100,6 +116,7 @@ A RESTful API for yummy recipes
             }
         ```
        
+   
 
 
 * #### Author
