@@ -1,4 +1,5 @@
 [![Code Climate](https://codeclimate.com/github/code-sleuth/yummy-recipes-api/badges/gpa.svg)](https://codeclimate.com/github/code-sleuth/yummy-recipes-api)
+
 # **Yummy Recipes API**
 A RESTful API for yummy recipes
 
