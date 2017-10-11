@@ -62,7 +62,6 @@ class AuthTestCase(unittest.TestCase):
         # dictionary to represent an unregistered user
         user_not_in_db = {
             'username': 'you',
-            'fullname': 'you are',
             'password': 'nope'
         }
         # send a POST request to /auth/login with the invalid data above

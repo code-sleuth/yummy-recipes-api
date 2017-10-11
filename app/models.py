@@ -10,12 +10,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), unique=True)
     fullname = db.Column(db.String(50))
-    password = db.column(db.String(500))
+    password = db.Column(db.String(500))
 
     recipes = db.relationship('Recipe', backref="users", lazy='dynamic')
     categories = db.relationship('Category', backref="users", lazy='dynamic')
 
-    def __init__(self, username, fullname, password):
+    def __init__(self, username='', fullname='', password=''):
         self.username = username
         self.fullname = fullname
         self.password = generate_password_hash(password)
@@ -40,7 +40,7 @@ class User(db.Model):
         try:
             # set up a payload with an expiration date
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=3),
+                'exp': datetime.utcnow() + timedelta(minutes=5),
                 'iat': datetime.utcnow(),
                 'sub': userid
             }
@@ -58,7 +58,7 @@ class User(db.Model):
     @staticmethod
     def decode_token(token):
         try:
-            payload = jwt.decode(token, app.config.get('SECRET'))
+            payload = jwt.decode(token, set_app().config.get('SECRET'))
             return payload['sub']
         except jwt.ExpiredSignatureError:
             # if the token is expired, return an error string
@@ -81,8 +81,9 @@ class Category(db.Model):
 
     rec = db.relationship('Recipe', backref="categories", lazy='dynamic')
 
-    def __init__(self):
-        pass
+    def __init__(self, name="", created_by=""):
+        self.name = name
+        self.created_by = created_by
 
     def new_category(self, name):
         self.name = name
@@ -98,6 +99,9 @@ class Category(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def __repr__(self):
+        return "<User: {}>".format(self.name)
 
 
 class Recipe(db.Model):

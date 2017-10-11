@@ -50,14 +50,13 @@ class LoginView(MethodView):
         # Handle POST request for this view. Url ---> /auth/login
         try:
             post_data = request.get_json(force=True)
+            print(post_data)
             # Get the user object using their username (unique to every user)
             user = User.query.filter_by(username=post_data['username']).first()
-            user_obj = User(username=post_data['username'], fullname=post_data['fullname'],
-                            password=post_data['password'])
             # Try to authenticate the found user using their password
-            if user and user_obj.validate_password(post_data['password']):
+            if user and user.validate_password(post_data['password']):
                 # Generate the access token. This will be used as the authorization header
-                user_access_token = user_obj.user_generate_token(user.id)
+                user_access_token = user.user_generate_token(user.id)
                 if user_access_token:
                     response = {
                         'message': 'You logged in successfully.',
