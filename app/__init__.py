@@ -88,7 +88,6 @@ def set_app():
     @app.route('/categories/', methods=['GET', 'POST'])
     def categories():
         # Get the access token from the header
-        # request.headers.set('Authorization', access_token)
         access_token = request.headers.get('Authorization')
         # print(request.headers)
         print(access_token)
@@ -139,7 +138,7 @@ def set_app():
                 }
                 return make_response(jsonify(response)), 401
 
-    @app.route('/categories/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+    @app.route('/categories/<int:id>', methods=['DELETE', 'PUT', 'GET'])
     def edit_category_by_id(id, **kwargs):
         category = Category.query.filter_by(id=id).first()
         print(category)
@@ -154,7 +153,6 @@ def set_app():
 
         elif request.method == "PUT":
             name = str(request.data.get('name'))
-            print(name)
             category.name = name
             category.save()
             response = jsonify({
@@ -178,6 +176,129 @@ def set_app():
             })
             response.status_code = 200
             return response
+
+    @app.route('/recipes', methods=['GET', 'POST'])
+    def recipes():
+        # Get access token
+        access_token = request.headers.get('Authorization')
+        if access_token:
+            # decode token to get user id
+            userid = User.decode_token(access_token)
+
+            # if user id is not a string
+            if not isinstance(userid, str):
+                # user is authenticated, handle the request
+                if request.method == 'POST':
+                    category_id = int(request.data.get('category_id'))
+                    created_by = int(request.data.get('created_by'))
+                    name = str(request.data.get('name'))
+                    details = str(request.data.get('details'))
+                    ingredients = str(request.data.get('ingredients'))
+
+                    if category_id and created_by and name and details and ingredients:
+                        recipe = Recipe(category_id, name, details, ingredients, created_by)
+                        print(created_by)
+                        recipe.save()
+
+                        response = {
+                            'id': recipe.id,
+                            'category_id': recipe.category_id,
+                            'name': recipe.name,
+                            'details': recipe.details,
+                            'ingredients': recipe.ingredients,
+                            'date_created': recipe.date_created,
+                            'date_modified': recipe.date_modified,
+                            'created_by': recipe.created_by
+                        }
+
+                        response = json.dumps(response)
+                        return response, 201
+                else:
+                    # get all recipes created by this user
+                    recipes = Recipe.query.filter_by(created_by=userid)
+                    res = []
+                    print("here")
+                    print(recipes)
+                    for recipe in recipes:
+                        obj = {
+                            'id': recipe.id,
+                            'category_id': recipe.category_id,
+                            'name': recipe.name,
+                            'details': recipe.details,
+                            'ingredients': recipe.ingredients,
+                            'date_created': recipe.date_created,
+                            'date_modified': recipe.date_modified,
+                            'created_by': recipe.created_by
+                        }
+                        res.append(obj)
+
+                    return make_response(jsonify(res)), 201
+            else:
+                # user authentication failed, so the payload is an error message
+                message = userid
+                response = {
+                    'message': message
+                }
+                return make_response(jsonify(response)), 401
+
+    @app.route('/recipes/<int:id>', methods=['DELETE', 'PUT', 'GET'])
+    def edit_recipes(id, **kwargs):
+        recipe = Recipe.query.filter_by(id=id).first()
+
+        if not recipe:
+            abort(404)
+
+        if request.method == "DELETE":
+            recipe.delete()
+            return {
+                "message": "Recipe {} deleted".format(id)
+            }, 200
+
+        elif request.method == "PUT":
+            # get values from put request
+            category_id = int(request.data.get('category_id'))
+            name = str(request.data.get('name'))
+            details = str(request.data.get('details'))
+            ingredients = str(request.data.get('ingredients'))
+
+            # update database values
+            recipe.category_id = category_id
+            recipe.name = name
+            recipe.details = details
+            recipe.ingredients = ingredients
+
+            # save and commit changes
+            recipe.save()
+
+            response = {
+                'id': recipe.id,
+                'category_id': recipe.category_id,
+                'name': recipe.name,
+                'details': recipe.details,
+                'ingredients': recipe.ingredients,
+                'date_created': recipe.date_created,
+                'date_modified': recipe.date_modified,
+                'created_by': recipe.created_by
+            }
+
+            response = json.dumps(response)
+            return response, 200
+
+        else:
+            # GET
+            response = {
+                'id': recipe.id,
+                'category_id': recipe.category_id,
+                'name': recipe.name,
+                'details': recipe.details,
+                'ingredients': recipe.ingredients,
+                'date_created': recipe.date_created,
+                'date_modified': recipe.date_modified,
+                'created_by': recipe.created_by
+            }
+
+            response = json.dumps(response)
+            return response, 200
 
     # import the authentication blueprint and register it on the app
     from .auth import auth_blueprint

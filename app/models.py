@@ -12,8 +12,8 @@ class User(db.Model):
     fullname = db.Column(db.String(50))
     password = db.Column(db.String(500))
 
-    recipes = db.relationship('Recipe', backref="users", lazy='dynamic')
-    categories = db.relationship('Category', backref="users", lazy='dynamic')
+    recipes = db.relationship('Recipe', backref="users", lazy='dynamic', cascade="all, delete-orphan")
+    categories = db.relationship('Category', backref="users", lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, username='', fullname='', password=''):
         self.username = username
@@ -79,7 +79,7 @@ class Category(db.Model):
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    rec = db.relationship('Recipe', backref="categories", lazy='dynamic')
+    rec = db.relationship('Recipe', backref="categories", lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, name="", created_by=""):
         self.name = name
@@ -101,7 +101,7 @@ class Category(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return "<User: {}>".format(self.name)
+        return "<Category: {}>".format(self.name)
 
 
 class Recipe(db.Model):
@@ -115,16 +115,9 @@ class Recipe(db.Model):
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    def __init__(self, category_id='', user_id='', name='', details='', ingredients=''):
+    def __init__(self, category_id='', name='', details='', ingredients='', created_by=''):
         self.category_id = category_id
-        self.user_id = user_id
-        self.name = name
-        self.details = details
-        self.ingredients = ingredients
-
-    def new_recipe(self, category_id, user_id, name, details, ingredients):
-        self.category_id = category_id
-        self.user_id = user_id
+        self.created_by = created_by
         self.name = name
         self.details = details
         self.ingredients = ingredients
@@ -134,9 +127,12 @@ class Recipe(db.Model):
         return Recipe.query.all()
 
     def save(self):
-        db.session.save(self)
+        db.session.add(self)
         db.session.commit()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def __repr__(self):
+        return "<Recipe: {}>".format(self.name)
