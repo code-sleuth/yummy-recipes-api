@@ -27,10 +27,9 @@ class UserTest(unittest.TestCase):
         }
         return self.client().post('/auth/register', data=json.dumps(user_info))
 
-    def user_login(self, username='ibm', fullname='jon dow', password='123'):
+    def user_login(self, username='ibm', password='123'):
         user_info = {
             'username': username,
-            'fullname': fullname,
             'password': password
         }
         return self.client().post('/auth/login', data=json.dumps(user_info))

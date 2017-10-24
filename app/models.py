@@ -59,7 +59,11 @@ class User(db.Model):
     def decode_token(token):
         try:
             payload = jwt.decode(token, set_app().config.get('SECRET'))
-            return payload['sub']
+            is_blacklisted_token = BlackListToken.check_blacklist(auth_token=token)
+            if is_blacklisted_token:
+                return 'Token Blacklisted. Please log in'
+            else:
+                return payload['sub']
         except jwt.ExpiredSignatureError:
             # if the token is expired, return an error string
             return "The token is expired. Login to renew token"
@@ -136,3 +140,28 @@ class Recipe(db.Model):
 
     def __repr__(self):
         return "<Recipe: {}>".format(self.name)
+
+
+class BlackListToken(db.Model):
+    __tablename__ = 'blacklist_tokens'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    token = db.Column(db.String(500), unique=True, nullable=False)
+    blacklisted_on = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, token):
+        self.token = token
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def check_blacklist(auth_token):
+        # check whether token has been blacklisted
+        res = BlackListToken.query.filter_by(token=str(auth_token)).first()
+        if res:
+            return True
+        else:
+            return False
+
+    def __repr__(self):
+        return '<id: token: {}'.format(self.token)

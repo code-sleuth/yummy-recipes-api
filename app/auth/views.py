@@ -2,7 +2,29 @@ from . import auth_blueprint
 
 from flask.views import MethodView
 from flask import make_response, request, jsonify
-from app.models import User
+from app.models import User, BlackListToken
+
+
+def get_authenticated_user(request):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return None
+    try:
+        access_token = auth_header
+    except (IndexError, ValueError):
+        return 'Authorization header is in wrong format.'
+    if not access_token:
+        return None
+    else:
+        user_id = User.decode_token(access_token)
+        if not isinstance(user_id, str):
+            # user is authenticated so get the user
+            user = User.query.get(user_id)
+            return user
+        elif user_id == 'You are already logged out':
+            return user_id
+        else:
+            return None
 
 
 #  class to register new user
@@ -38,7 +60,7 @@ class RegistrationView(MethodView):
             # There is an existing user. We don't want to register users twice
             # Return a message to the user telling them that they they already exist
             response = {
-                'message': 'User exits. Login'
+                'message': 'User exists. Login'
             }
 
             return make_response(jsonify(response)), 202
@@ -50,7 +72,6 @@ class LoginView(MethodView):
         # Handle POST request for this view. Url ---> /auth/login
         try:
             post_data = request.get_json(force=True)
-            print(post_data)
             # Get the user object using their username (unique to every user)
             user = User.query.filter_by(username=post_data['username']).first()
             # Try to authenticate the found user using their password
@@ -77,14 +98,55 @@ class LoginView(MethodView):
             # Return a server error using the HTTP Error Code 500 (Internal Server Error)
             return make_response(jsonify(response)), 500
 
-# Define the API resource
+
+class LogoutView(MethodView):
+    def post(self):
+        auth_token = request.headers.get('Authorization')
+        if auth_token:
+            res = User.decode_token(auth_token)
+            if not isinstance(res, str):
+                blacklist_token = BlackListToken(token=auth_token)
+                try:
+                    blacklist_token.save()
+                    response_object = {
+                        'status': 'success',
+                        'message': 'successfully logged out'
+                    }
+                    return make_response(jsonify(response_object)), 200
+                except Exception as e:
+                    response_object = {
+                        'status': 'failed from thrown exception',
+                        'message': str(e)
+                    }
+                    return make_response(jsonify(response_object)), 200
+            else:
+                response_object = {
+                    'status': 'fail from instance',
+                    'message': 'authentication error. Token already expired'
+                }
+                return make_response(jsonify(response_object)), 401
+        else:
+            response_object = {
+                'status': 'fail from token',
+                'message': 'Provide a valid auth token.'
+            }
+            return make_response(jsonify(response_object)), 403
+
+
+# Define the API resources
 registration_view = RegistrationView.as_view('registration_view')
 login_view = LoginView.as_view('login_view')
+logout_view = LogoutView.as_view('logout_view')
 
 # Define the rule for the registration url --->  /auth/register
 # Then add the rule to the blueprint
 auth_blueprint.add_url_rule('/auth/register', view_func=registration_view, methods=['POST'])
 
-# Define the rule for the registration url --->  /auth/login
+# Define the rule for the login url --->  /auth/login
 # Then add the rule to the blueprint
 auth_blueprint.add_url_rule('/auth/login', view_func=login_view, methods=['POST'])
+
+# Define the rule for the logout url --->  /auth/logout
+# Then add the rule to the blueprint
+auth_blueprint.add_url_rule('/auth/logout', view_func=logout_view, methods=['POST'])
+
