@@ -39,18 +39,16 @@ class UserTest(unittest.TestCase):
         # register a test user, then log them in
         self.register_new_user()
         result = self.user_login()
-        # obtain the access token
-        access_token = json.loads(result.data.decode())['access_token']
+        self.assertEqual(result.status_code, 200)
         # ensure the request has an authorization header set with the access token in it
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
         self.assertIn('xcode', str(res.data))
 
     def test_create_users_table(self):
         self.register_new_user()
         result = self.user_login()
-        access_token = json.loads(result.data.decode())['access_token']
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token),  data=self.user)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
         self.assertIn('xcode', str(res.data))
 
@@ -58,10 +56,10 @@ class UserTest(unittest.TestCase):
         # GET request test
         self.register_new_user()
         result = self.user_login()
-        access_token = json.loads(result.data.decode())['access_token']
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
+        self.assertEqual(result.status_code, 200)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
-        res = self.client().get('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
+        res = self.client().get('/users', data=self.user)
         self.assertEqual(res.status_code, 200)
         self.assertIn('xcode', str(res.data))
 
@@ -69,10 +67,9 @@ class UserTest(unittest.TestCase):
         # get user by id
         self.register_new_user()
         result = self.user_login()
-        access_token = json.loads(result.data.decode())['access_token']
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
+        self.assertEqual(result.status_code, 200)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
-        res_in_json = json.loads(res.data.decode('utf-8').replace("'", "\""))
         result = self.client().get('/users/2')
         self.assertEqual(result.status_code, 200)
         self.assertIn('xcode', str(result.data))
@@ -81,10 +78,10 @@ class UserTest(unittest.TestCase):
         # PUT request
         self.register_new_user()
         result = self.user_login()
-        access_token = json.loads(result.data.decode())['access_token']
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token), data=self.user)
+        self.assertEqual(result.status_code, 200)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
-        res = self.client().put('/users/2', headers=dict(Authorization="Owner " + access_token), data={"username": "xcode"})
+        res = self.client().put('/users/2', data={"username": "xcode"})
         self.assertEqual(res.status_code, 200)
         result = self.client().get('/users/1')
         self.assertIn('ibm', str(result.data))
@@ -93,9 +90,8 @@ class UserTest(unittest.TestCase):
         # DELETE request
         self.register_new_user()
         result = self.user_login()
-        access_token = json.loads(result.data.decode())['access_token']
-        res = self.client().post('/users/', headers=dict(Authorization="Owner " + access_token),
-                                 data=self.user)
+        self.assertEqual(result.status_code, 200)
+        res = self.client().post('/users', data=self.user)
         self.assertEqual(res.status_code, 201)
         dell = self.client().delete('/users/2')
         self.assertEqual(dell.status_code, 200)
@@ -108,9 +104,3 @@ class UserTest(unittest.TestCase):
             # drop all tables
             db.session.remove()
             db.drop_all()
-
-if __name__ == "__main__":
-    unittest.main()
-
-
-
