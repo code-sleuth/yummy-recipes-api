@@ -1,6 +1,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/code-sleuth/yummy-recipes-api/badge.svg?branch=dev&cacheBuster=1)](https://coveralls.io/github/code-sleuth/yummy-recipes-api?branch=dev)
 [![Build Status](https://travis-ci.org/code-sleuth/yummy-recipes-api.svg?branch=dev&cacheBuster=1)](https://travis-ci.org/code-sleuth/yummy-recipes-api)
-[![Code Climate](https://codeclimate.com/github/code-sleuth/yummy-recipes-api/badges/gpa.svg)](https://codeclimate.com/github/code-sleuth/yummy-recipes-api)
+[![Maintainability](https://api.codeclimate.com/v1/badges/feffc843869abc06a0e7/maintainability)](https://codeclimate.com/github/code-sleuth/yummy-recipes-api/maintainability)
 
 # **Yummy Recipes API**
 A RESTful API for yummy recipes
