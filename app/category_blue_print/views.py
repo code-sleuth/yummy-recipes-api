@@ -6,7 +6,8 @@ from app.models import Category
 from flasgger import swag_from
 
 
-@swag_from('swagger_docs/categories.yaml', methods=['GET'])
+@swag_from('swagger_docs/post_category.yaml', methods=['POST'])
+@swag_from('swagger_docs/get_all_categories.yaml', methods=['GET'])
 def categories_view():
     # Check whether user has appropriate access rights
     user = get_authenticated_user(request)
@@ -20,21 +21,19 @@ def categories_view():
         if name:
             cat = Category(name=name, created_by=user.id)
             cat.save()
-            response = {
+            return make_response(jsonify({
                 'id': cat.id,
                 'name': cat.name,
                 'date_created': cat.date_created,
                 'date_modified': cat.date_modified,
                 'created_by': user.id
-            }
+            })), 201
 
-            response = json.dumps(response)
-            return response, 201
         else:
             error = jsonify({
-                "message": "Name can not be a null string"
+                "message": "Name can not be a null string OR You are logged out"
             })
-            return error, 403
+            return error, 401
     # get all categories
     elif request.method == "GET":
         limit = request.args.get('limit') or 20
@@ -71,6 +70,9 @@ def categories_view():
             })), 200
 
 
+@swag_from('swagger_docs/put_category_by_id.yaml', methods=['PUT'])
+@swag_from('swagger_docs/delete_category_by_id.yaml', methods=['DELETE'])
+@swag_from('swagger_docs/get_category_by_id.yaml', methods=['GET'])
 def categories_view_edit(id):
     # Check whether user has appropriate access rights
     user = get_authenticated_user(request)
@@ -117,6 +119,7 @@ def categories_view_edit(id):
         return make_response(jsonify({"message": "invalid request"}), 405)
 
 
+@swag_from('swagger_docs/search_categories.yaml', methods=['GET'])
 def search_category():
     user = get_authenticated_user(request)
     if not user:

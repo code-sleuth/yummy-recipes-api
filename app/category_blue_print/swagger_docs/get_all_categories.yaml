@@ -1,5 +1,5 @@
-Views recipe categories
-Returns all recipe categories created by the logged in user
+Returns all categories in the database
+Returns all categories in the database
 ---
 tags:
   - "Category"
@@ -11,21 +11,17 @@ parameters:
     required: true
     type: "string"
     description: "JWT token authentication"
-  - name: "q"
-    in: "query"
-    description: "Search recipe categories by name"
-    type: "string"
   - name: "page"
     in: "query"
-    description: "Pagination page for list"
+    description: "Pagination current page"
     type: "integer"
   - name: "limit"
     in: "query"
-    description: "Pagination number of recipe categories per page"
+    description: "Pagination number of categories per page"
     type: "integer"
 responses:
   403:
-    description: "You do not have the appropriate permissions"
+    description: "You have no access rights"
     schema:
       $ref: "#/definitions/unauthorized"
   401:
@@ -33,7 +29,7 @@ responses:
     schema:
       $ref: "#/definitions/logged_out"
   200:
-    description: "A list of recipe categories belonging to the logged in user"
+    description: "returns all the categories matching the input string"
     schema:
       $ref: "#/definitions/categories"
   400:
@@ -48,7 +44,7 @@ securityDefinitions:
 security:
   Bearer: []
 definitions:
-  category:
+  category-array:
     type: "object"
     required:
       - "name"
@@ -58,20 +54,26 @@ definitions:
         format: "int64"
       name:
         type: "string"
-        example: "Pastries"
-      description:
-        type: "string"
-        example: "All wheat based baked foods"
-      created on:
+        example: "Rice Category"
+      date_created:
         type: "string"
         format: "date-time"
-      last modified on:
+      date_modified:
         type: "string"
         format: "date-time"
+      per_page:
+        type: "int"
+        example: 20
+      page_number:
+        type: "int"
+        example: 1
+      total_items_returned:
+        type: "int"
+        example: 1
   categories:
     type: "array"
     items:
-      $ref: "#/definitions/category"
+      $ref: "#/definitions/category-array"
   invalid_query_type:
     type: "object"
     properties:
@@ -83,7 +85,7 @@ definitions:
     properties:
       message:
         type: "string"
-        default: "You do not have the appropriate permissions"
+        default: "You have no access rights"
   logged_out:
     type: "object"
     properties:

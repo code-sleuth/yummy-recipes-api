@@ -189,10 +189,10 @@ class AuthTestCase(unittest.TestCase):
         # fail to create new category
         fail_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                        data=json.dumps({'name': ''}))
-        self.assertEqual(fail_data.status_code, 403)
+        self.assertEqual(fail_data.status_code, 401)
 
         fail_info = json.loads(fail_data.data.decode())
-        self.assertEqual(fail_info['message'], 'Name can not be a null string')
+        self.assertEqual(fail_info['message'], 'Name can not be a null string OR You are logged out')
 
         # fail to update non existent category
         fail_update = self.client().put('/categories/1', headers=dict(Authorization=logged_in['access_token']),
