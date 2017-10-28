@@ -71,6 +71,7 @@ class RegistrationView(MethodView):
 
 # class to handle user login and token generation
 class LoginView(MethodView):
+    @swag_from('swagger_docs/login.yaml', methods=['POST'])
     def post(self):
         # Handle POST request for this view. Url ---> /auth/login
         try:
@@ -103,6 +104,7 @@ class LoginView(MethodView):
 
 
 class LogoutView(MethodView):
+    @swag_from('swagger_docs/logout.yaml', methods=['POST'])
     def post(self):
         auth_token = request.headers.get('Authorization')
         if auth_token:
@@ -125,7 +127,7 @@ class LogoutView(MethodView):
             else:
                 response_object = {
                     'status': 'fail from instance',
-                    'message': 'authentication error. Token already expired'
+                    'message': 'You are already logged out'
                 }
                 return make_response(jsonify(response_object)), 401
         else:
