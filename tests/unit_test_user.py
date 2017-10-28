@@ -8,7 +8,7 @@ class UserTest(unittest.TestCase):
     def setUp(self):
         # initialize app.
         # define test variables
-        self.app = set_app()
+        self.app = set_app(config_name='testing')
         self.client = self.app.test_client
         self.user = {'username': 'xcode', 'fullname': 'ibrahim mbaziira', 'password': 'pass'}
 
@@ -41,14 +41,14 @@ class UserTest(unittest.TestCase):
         result = self.user_login()
         self.assertEqual(result.status_code, 200)
         # ensure the request has an authorization header set with the access token in it
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
         self.assertIn('xcode', str(res.data))
 
     def test_create_users_table(self):
         self.register_new_user()
         result = self.user_login()
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
         self.assertIn('xcode', str(res.data))
 
@@ -57,9 +57,9 @@ class UserTest(unittest.TestCase):
         self.register_new_user()
         result = self.user_login()
         self.assertEqual(result.status_code, 200)
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
-        res = self.client().get('/users', data=self.user)
+        res = self.client().get('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 200)
         self.assertIn('xcode', str(res.data))
 
@@ -68,7 +68,7 @@ class UserTest(unittest.TestCase):
         self.register_new_user()
         result = self.user_login()
         self.assertEqual(result.status_code, 200)
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
         result = self.client().get('/users/2')
         self.assertEqual(result.status_code, 200)
@@ -79,19 +79,19 @@ class UserTest(unittest.TestCase):
         self.register_new_user()
         result = self.user_login()
         self.assertEqual(result.status_code, 200)
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
-        res = self.client().put('/users/2', data={"username": "xcode"})
+        res = self.client().put('/users/1', data=json.dumps({"username": "new"}))
         self.assertEqual(res.status_code, 200)
         result = self.client().get('/users/1')
-        self.assertIn('ibm', str(result.data))
+        self.assertIn('new', str(result.data))
 
     def test_user_can_be_deleted(self):
         # DELETE request
         self.register_new_user()
         result = self.user_login()
         self.assertEqual(result.status_code, 200)
-        res = self.client().post('/users', data=self.user)
+        res = self.client().post('/users', data=json.dumps(self.user))
         self.assertEqual(res.status_code, 201)
         dell = self.client().delete('/users/2')
         self.assertEqual(dell.status_code, 200)

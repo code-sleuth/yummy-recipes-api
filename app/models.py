@@ -1,5 +1,7 @@
 import jwt
-from app import db, set_app
+import os
+from flask import current_app
+from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 
@@ -44,10 +46,9 @@ class User(db.Model):
                 'iat': datetime.utcnow(),
                 'sub': userid
             }
-
             jwt_string = jwt.encode(
                 payload,
-                set_app().config.get('SECRET'),
+                current_app.config.get('SECRET'),
                 algorithm='HS256'
             )
             return jwt_string
@@ -58,7 +59,7 @@ class User(db.Model):
     @staticmethod
     def decode_token(token):
         try:
-            payload = jwt.decode(token, set_app().config.get('SECRET'))
+            payload = jwt.decode(token, current_app.config.get('SECRET'))
             is_blacklisted_token = BlackListToken.check_blacklist(auth_token=token)
             if is_blacklisted_token:
                 return 'Token Blacklisted. Please log in'

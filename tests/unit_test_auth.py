@@ -1,3 +1,4 @@
+import os
 import unittest
 import json
 from app import set_app, db
@@ -7,44 +8,44 @@ from app import set_app, db
 class AuthTestCase(unittest.TestCase):
     # Set up test variables
     def setUp(self):
-        self.app = set_app()
+        self.app = set_app(config_name='testing')
         # initialize the test client
         self.client = self.app.test_client
-        # This is the user test json data with a predefined email and password
-        self.user_details = {
-            'username': 'xcode',
-            'fullname': 'john dow',
-            'password': 'pass'
-        }
-
-        self.user_login = {
-            'username': 'xcode',
-            'password': 'pass'
-        }
-
-        self.category_details = {
-            'name': 'Rice Category'
-        }
-
-        self.category_update_data = {
-            'name': 'Rice More Category'
-        }
-
-        self.recipe_details = {
-            'created_by': 1,
-            'category_id': 1,
-            'name': "recipe one",
-            'details': 'lots of spice',
-            'ingredients': 'everything'
-        }
-        self.update_recipe = {
-            'category_id': 1,
-            'name': "recipe one and another one",
-            'details': 'lots of spicy meats',
-            'ingredients': 'everything and all'
-        }
 
         with self.app.app_context():
+            # This is the user test json data with a predefined email and password
+            self.user_details = {
+                'username': 'xcode',
+                'fullname': 'john dow',
+                'password': 'pass'
+            }
+
+            self.user_login = {
+                'username': 'xcode',
+                'password': 'pass'
+            }
+
+            self.category_details = {
+                'name': 'Rice Category'
+            }
+
+            self.category_update_data = {
+                'name': 'Rice More Category'
+            }
+
+            self.recipe_details = {
+                'created_by': 1,
+                'category_id': 1,
+                'name': "recipe one",
+                'details': 'lots of spice',
+                'ingredients': 'everything'
+            }
+            self.update_recipe = {
+                'category_id': 1,
+                'name': "recipe one and another one",
+                'details': 'lots of spicy meats',
+                'ingredients': 'everything and all'
+            }
             # create all tables
             db.session.close()
             db.drop_all()
@@ -129,13 +130,13 @@ class AuthTestCase(unittest.TestCase):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
         self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
+        reg_data = json.loads(reg_user.data.decode('utf-8'))
         self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
         self.assertEqual(login.status_code, 200)
-        logged_in = json.loads(login.data.decode())
+        logged_in = json.loads(login.data.decode('utf-8'))
         self.assertEqual(logged_in['message'], 'You logged in successfully.')
         self.assertTrue(logged_in['access_token'])
 
@@ -144,9 +145,23 @@ class AuthTestCase(unittest.TestCase):
                                        data=json.dumps(self.category_details))
         self.assertEqual(post_data.status_code, 201)
 
-        # get categories created by this user
+        # get all categories and paginate
         get_category = self.client().get('/categories', headers=dict(Authorization=logged_in['access_token']))
         self.assertEqual(get_category.status_code, 200)
+        get_category_data = json.loads(get_category.data.decode('utf-8'))
+        # check for defaults for pagination
+        self.assertEqual(get_category_data[0]['per_page'], 20)
+        self.assertEqual(get_category_data[0]['page_number'], 1)
+        self.assertEqual(get_category_data[0]['total_items_returned'], 1)
+
+        # search category and paginate
+        search_category = self.client().get('/categories/search?q=c&limit=2&page=1',
+                                            headers=dict(Authorization=logged_in['access_token']))
+        self.assertEqual(search_category.status_code, 200)
+        search_category_data = json.loads(search_category.data.decode('utf-8'))
+        self.assertEqual(search_category_data[0]['per_page'], 2)
+        self.assertEqual(search_category_data[0]['page_number'], 1)
+        self.assertEqual(search_category_data[0]['total_items_returned'], 1)
 
         # update category
         update = self.client().put('/categories/1', headers=dict(Authorization=logged_in['access_token']),
@@ -232,9 +247,22 @@ class AuthTestCase(unittest.TestCase):
                                     data=json.dumps(self.recipe_details))
         self.assertEqual(recipe.status_code, 201)
 
-        # get recipe
+        # get recipe and paginate
         get_recipe = self.client().get('/recipes', headers=dict(Authorization=logged_in['access_token']))
         self.assertEqual(get_recipe.status_code, 200)
+        get_recipe_data = json.loads(get_recipe.data.decode('utf-8'))
+        self.assertEqual(get_recipe_data[0]['per_page'], 20)
+        self.assertEqual(get_recipe_data[0]['page_number'], 1)
+        self.assertEqual(get_recipe_data[0]['total_items_returned'], 1)
+
+        # search for recipe
+        search_recipe = self.client().get('recipes/search?q=r&limit=3&page=1',
+                                        headers=dict(Authorization=logged_in['access_token']))
+        self.assertEqual(search_recipe.status_code, 200)
+        search_recipe_data = json.loads(search_recipe.data.decode('utf-8'))
+        self.assertEqual(search_recipe_data[0]['per_page'], 3)
+        self.assertEqual(search_recipe_data[0]['page_number'], 1)
+        self.assertEqual(search_recipe_data[0]['total_items_returned'], 1)
 
         # update recipe
         update_recipe = self.client().put('/recipes/1', headers=dict(Authorization=logged_in['access_token']),
@@ -249,9 +277,3 @@ class AuthTestCase(unittest.TestCase):
         # try to get deleted recipe
         get_deleted_recipe = self.client().get('/recipes/1', headers=dict(Authorization=logged_in['access_token']))
         self.assertEqual(get_deleted_recipe.status_code, 404)
-
-
-
-
-
-

@@ -1,0 +1,71 @@
+User
+User
+---
+tags:
+  - "User"
+parameters:
+  - name: "body"
+    in: "body"
+    required: true
+    description: "user details"
+    schema:
+      $ref: "#/definitions/user_register"
+responses:
+  201:
+    description: "User registered successfully"
+    schema:
+      $ref: "#/definitions/registration_success"
+  400:
+    description: "Bad request or Wrong data format"
+    schema:
+      $ref: "#/definitions/invalid_data"
+  202:
+    description: "User already exists"
+    schema:
+      $ref: "#/definitions/existing_user"
+  500:
+    description: "internal server error"
+    schema:
+      $ref: "#/definitions/server_error"
+definitions:
+  user_register:
+    type: "object"
+    required:
+      - "username"
+      - "fullname"
+      - "password"
+    properties:
+      username:
+        type: "string"
+        example: "jane"
+      fullname:
+        type: "string"
+        example: "Jane Dow"
+      password:
+        type: "string"
+        format: "password"
+        example: "pass6"
+  invalid_data:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "The data sent is in the wrong structure/format"
+  registration_success:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "User registered successfully"
+  existing_user:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "User already exists. Please login"
+  server_error:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "Internal Server Error"

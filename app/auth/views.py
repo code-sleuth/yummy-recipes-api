@@ -1,8 +1,8 @@
 from . import auth_blueprint
-
 from flask.views import MethodView
 from flask import make_response, request, jsonify
 from app.models import User, BlackListToken
+from flasgger import swag_from
 
 
 def get_authenticated_user(request):
@@ -29,6 +29,9 @@ def get_authenticated_user(request):
 
 #  class to register new user
 class RegistrationView(MethodView):
+    """document api"""
+
+    @swag_from('swagger_docs/register_user.yaml', methods=['POST'])
     def post(self):
         # Handle POST request for this view. Url ---> /auth/register"""
         # Query to see if the user already exists
@@ -81,7 +84,7 @@ class LoginView(MethodView):
                 if user_access_token:
                     response = {
                         'message': 'You logged in successfully.',
-                        'access_token': user_access_token.decode()
+                        'access_token': user_access_token.decode('utf-8')
                     }
                     return make_response(jsonify(response)), 200
             else:
