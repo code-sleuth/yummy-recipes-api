@@ -12,7 +12,7 @@ def recipes_view():
     # Check whether user has appropriate access rights
     user = get_authenticated_user(request)
     if not user:
-        return make_response(jsonify({"message": "You have no access rights"}))
+        return make_response(jsonify({"message": "You have no access rights"})), 403
 
     if request.method == 'POST':
         post_data = request.get_json(force=True)
@@ -87,7 +87,7 @@ def recipes_view():
 def recipes_view_edit(id):
     user = get_authenticated_user(request)
     if not user:
-        return make_response(jsonify({"message": "You have no access rights"}))
+        return make_response(jsonify({"message": "You have no access rights"})), 403
 
     recipe = Recipe.query.filter_by(id=id).first()
     if not recipe:
@@ -95,7 +95,7 @@ def recipes_view_edit(id):
 
     if request.method == "DELETE":
         recipe.delete()
-        return make_response(jsonify({"message": "Recipe {} deleted".format(id)})), 200
+        return make_response(jsonify({"message": "Recipe with [ID: {}] deleted".format(id)})), 200
     elif request.method == "PUT":
         # get values from put request
         update_data = request.get_json(force=True)

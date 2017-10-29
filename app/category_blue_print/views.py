@@ -89,7 +89,7 @@ def categories_view_edit(id):
     if request.method == 'DELETE':
         category.delete()
         return make_response(jsonify({
-                   "message": "Recipe Category {} Deleted".format(category.id)
+                   "message": "Category with [ID: {}] Deleted Successfully".format(category.id)
                })), 200
 
     elif request.method == "PUT":

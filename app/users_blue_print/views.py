@@ -4,11 +4,15 @@ from flask import make_response, jsonify, request, abort
 from app.auth.views import get_authenticated_user
 from app.models import User
 from flasgger import swag_from
+from werkzeug.security import generate_password_hash
 
 
 @swag_from('swagger_docs/get_all_users.yaml', methods=['GET'])
 def users():
     if request.method == 'GET':
+        user = get_authenticated_user(request)
+        if not user:
+            return make_response(jsonify({'message': 'you have no access rights'})), 403
         try:
             # get request params
             limit = request.args.get('limit') or 20
@@ -50,14 +54,14 @@ def edit_by_id(id):
     if not user:
         return make_response(jsonify({'message': 'you have no access rights'})), 403
 
-    user_data = User.query.filter_by(id=user.id).first()
+    user_data = User.query.filter_by(id=id).first()
     if not user_data:
         abort(404)
 
     if request.method == 'DELETE':
         user_data.delete()
         return make_response(jsonify({
-            "message": "users {} deleted".format(user.id)
+            "message": "users with [ID: {}] deleted successfully".format(user.id)
         })), 200
 
     elif request.method == "PUT":
@@ -68,7 +72,7 @@ def edit_by_id(id):
             new_fullname = str(put_data['fullname'])
             if user_data.validate_password(old_password):
                 user_data.fullname = new_fullname
-                user_data.password = new_password
+                user_data.password = generate_password_hash(new_password)
                 user_data.save()
                 return make_response(jsonify({'id': user_data.id,
                                               'username': user_data.username,
@@ -79,7 +83,7 @@ def edit_by_id(id):
             old_password = str(put_data['old_password'])
             new_password = str(put_data['new_password'])
             if user_data.validate_password(old_password):
-                user_data.password = new_password
+                user_data.password = generate_password_hash(new_password)
                 user_data.save()
                 return make_response(jsonify({'id': user_data.id,
                                               'username': user_data.username,
@@ -99,7 +103,8 @@ def edit_by_id(id):
         return make_response(jsonify({
             'id': user_data.id,
             'username': user_data.username,
-            'fullname': user_data.fullname
+            'fullname': user_data.fullname,
+            'password': user_data.password
         })), 200
 
 users_blue_print.add_url_rule('/users', view_func=users, methods=['GET'])
