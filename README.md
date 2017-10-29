@@ -10,7 +10,7 @@ A RESTful API for yummy recipes
 2. Postgresql 9.6.*
 3. Flask 0.12.*
 
-[![Project Hosted on Heroku](https://yummy-recipes-api-pro.herokuapp.com)]
+[Project Hosted on Heroku](https://yummy-recipes-api-pro.herokuapp.com)
 
 ## Start application
 1. Clone the repository to your computer
