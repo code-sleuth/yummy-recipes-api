@@ -27,7 +27,7 @@ responses:
     schema:
       $ref: "#/definitions/logged_out"
   200:
-    description: "Successfully deleted category"
+    description: "Category deleted successfully."
     schema:
       $ref: "#/definitions/category-deleted"
   404:
@@ -35,29 +35,12 @@ responses:
     schema:
       $ref: "#/definitions/non_existent_category"
 definitions:
-  category-update:
+  category-deleted:
     type: "object"
     properties:
-      name:
+      message:
         type: "string"
-        example: "Append Rice Category"
-  category:
-    type: "object"
-    required:
-      - "name"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-        example: "Rice Category"
-      date_created:
-        type: "string"
-        format: "date-time"
-      date_modified:
-        type: "string"
-        format: "date-time"
+        example: "Category deleted successfully."
   unauthorized:
     type: "object"
     properties:

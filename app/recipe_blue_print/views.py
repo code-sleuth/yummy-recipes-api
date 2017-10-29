@@ -1,10 +1,13 @@
 from . import recipe_blue_print
 
-from flask import make_response, request, jsonify, json, abort
+from flask import make_response, request, jsonify, abort
 from app.auth.views import get_authenticated_user
 from app.models import Recipe
+from flasgger import swag_from
 
 
+@swag_from('swagger_docs/post_recipe.yaml', methods=['POST'])
+@swag_from('swagger_docs/get_all_recipes_by_current_user.yaml', methods=['GET'])
 def recipes_view():
     # Check whether user has appropriate access rights
     user = get_authenticated_user(request)
@@ -33,50 +36,54 @@ def recipes_view():
                 'date_modified': recipe.date_modified,
                 'created_by': recipe.created_by
             }
-
-            response = json.dumps(response)
-            return response, 201
+            return make_response(jsonify(response)), 201
         else:
             return make_response(jsonify({"message": "Failed to add Recipe"}))
 
     elif request.method == "GET":
-        # get request params
-        limit = request.args.get('limit') or 20
-        page = request.args.get('page') or 1
+        try:
+            # get request params
+            limit = request.args.get('limit') or 20
+            page = request.args.get('page') or 1
 
-        limit = int(limit)
-        page = int(page)
-        # get all recipes created by this user
-        recipes = Recipe.query.filter_by(created_by=user.id).paginate(per_page=limit, page=page, error_out=False)
-        res = []
-        for recipe in recipes.items:
-            obj = {
-                'id': recipe.id,
-                'category_id': recipe.category_id,
-                'name': recipe.name,
-                'details': recipe.details,
-                'ingredients': recipe.ingredients,
-                'date_created': recipe.date_created,
-                'date_modified': recipe.date_modified,
-                'created_by': recipe.created_by,
-                'per_page': recipes.per_page,
-                'page_number': recipes.page,
-                'total_items_returned': recipes.total
-            }
-            res.append(obj)
-        if res:
-            return make_response(jsonify(res)), 200
-        else:
-            return make_response(jsonify({
-                'message': 'No Items On This Page',
-                'per_page': recipes.per_page,
-                'page_number': recipes.page,
-                'total_items_returned': recipes.total
-            })), 200
+            limit = int(limit)
+            page = int(page)
+            # get all recipes created by this user
+            recipes = Recipe.query.filter_by(created_by=user.id).paginate(per_page=limit, page=page, error_out=False)
+            res = []
+            for recipe in recipes.items:
+                obj = {
+                    'id': recipe.id,
+                    'category_id': recipe.category_id,
+                    'name': recipe.name,
+                    'details': recipe.details,
+                    'ingredients': recipe.ingredients,
+                    'date_created': recipe.date_created,
+                    'date_modified': recipe.date_modified,
+                    'created_by': recipe.created_by,
+                    'per_page': recipes.per_page,
+                    'page_number': recipes.page,
+                    'total_items_returned': recipes.total
+                }
+                res.append(obj)
+            if res:
+                return make_response(jsonify(res)), 200
+            else:
+                return make_response(jsonify({
+                    'message': 'No Items On This Page',
+                    'per_page': recipes.per_page,
+                    'page_number': recipes.page,
+                    'total_items_returned': recipes.total
+                })), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
     else:
         return make_response(jsonify({"message": "Bad request"})), 400
 
 
+@swag_from('swagger_docs/delete_recipe_by_id.yaml', methods=['DELETE'])
+@swag_from('swagger_docs/get_recipe_by_id.yaml', methods=['GET'])
+@swag_from('swagger_docs/put_recipe_by_id.yaml', methods=['PUT'])
 def recipes_view_edit(id):
     user = get_authenticated_user(request)
     if not user:
@@ -84,7 +91,7 @@ def recipes_view_edit(id):
 
     recipe = Recipe.query.filter_by(id=id).first()
     if not recipe:
-        abort(404)
+        return make_response(jsonify({'message': 'Recipe Not Found'})), 404
 
     if request.method == "DELETE":
         recipe.delete()
@@ -116,7 +123,7 @@ def recipes_view_edit(id):
             'date_modified': recipe.date_modified,
             'created_by': recipe.created_by
         })
-        return response, 200
+        return make_response(response), 200
     elif request.method == "GET":
         # GET
         response = jsonify({
@@ -129,54 +136,58 @@ def recipes_view_edit(id):
             'date_modified': recipe.date_modified,
             'created_by': recipe.created_by
         })
-        return response, 200
+        return make_response(response), 200
     else:
-        return make_response(jsonify({"message": "Invalid request"})), 405
+        return make_response(jsonify({"message": "Page not Found"})), 404
 
 
+@swag_from('swagger_docs/search_current_user_recipes.yaml', methods=['GET'])
 def search_by_name():
     user = get_authenticated_user(request)
     if not user:
         return make_response(jsonify({"message": "You have no access rights"})), 403
 
     if request.method == "GET":
-        # get params
-        q = request.args.get('q') or " "
-        limit = request.args.get('limit') or 20
-        page = request.args.get('page') or 1
+        try:
+            # get params
+            q = request.args.get('q') or " "
+            limit = request.args.get('limit') or 20
+            page = request.args.get('page') or 1
 
-        q = str(q)
-        limit = int(limit)
-        page = int(page)
+            q = str(q)
+            limit = int(limit)
+            page = int(page)
 
-        recipe_by_name = Recipe.query.filter_by(created_by=user.id).filter(Recipe.name.like('%' + q + '%'))\
-            .paginate(per_page=limit, page=page, error_out=False)
-        if not recipe_by_name:
-            abort(404)
-        obj = []
-        for recipe in recipe_by_name.items:
-            rec = {
-                'id': recipe.id,
-                'category_id': recipe.category_id,
-                'name': recipe.name,
-                'details': recipe.details,
-                'ingredients': recipe.ingredients,
-                'date_created': recipe.date_created,
-                'date_modified': recipe.date_modified,
-                'created_by': recipe.created_by,
-                'per_page': recipe_by_name.per_page,
-                'page_number': recipe_by_name.page,
-                'total_items_returned': recipe_by_name.total
-            }
-            obj.append(rec)
-        if not obj:
-            return make_response(jsonify({
-                'message': 'No Content On This Page or Search Not Found',
-                'per_page': recipe_by_name.per_page,
-                'page_number': recipe_by_name.page,
-                'total_items_returned': recipe_by_name.total
-            }))
-        return make_response(jsonify(obj)), 200
+            recipe_by_name = Recipe.query.filter_by(created_by=user.id).filter(Recipe.name.like('%' + q + '%'))\
+                .paginate(per_page=limit, page=page, error_out=False)
+            if not recipe_by_name:
+                abort(404)
+            obj = []
+            for recipe in recipe_by_name.items:
+                rec = {
+                    'id': recipe.id,
+                    'category_id': recipe.category_id,
+                    'name': recipe.name,
+                    'details': recipe.details,
+                    'ingredients': recipe.ingredients,
+                    'date_created': recipe.date_created,
+                    'date_modified': recipe.date_modified,
+                    'created_by': recipe.created_by,
+                    'per_page': recipe_by_name.per_page,
+                    'page_number': recipe_by_name.page,
+                    'total_items_returned': recipe_by_name.total
+                }
+                obj.append(rec)
+            if not obj:
+                return make_response(jsonify({
+                    'message': 'No Content On This Page or Search Not Found',
+                    'per_page': recipe_by_name.per_page,
+                    'page_number': recipe_by_name.page,
+                    'total_items_returned': recipe_by_name.total
+                }))
+            return make_response(jsonify(obj)), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
 # Define the rule for recipes url ---> /recipes or /recipes?limit=<int:limit>&page=<int:page>
 recipe_blue_print.add_url_rule('/recipes', view_func=recipes_view, methods=['POST', 'GET'])

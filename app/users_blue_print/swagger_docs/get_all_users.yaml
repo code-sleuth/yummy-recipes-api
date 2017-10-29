@@ -1,8 +1,8 @@
-Returns all categories in the database
-Returns all categories in the database
+Returns all users in the database
+Returns all users in the database
 ---
 tags:
-  - "Category"
+  - "User"
 produces:
   - "application/json"
 parameters:
@@ -17,7 +17,7 @@ parameters:
     type: "integer"
   - name: "limit"
     in: "query"
-    description: "Pagination number of categories per page"
+    description: "Pagination number of users per page"
     type: "integer"
 responses:
   403:
@@ -29,38 +29,28 @@ responses:
     schema:
       $ref: "#/definitions/logged_out"
   200:
-    description: "returns all the categories"
+    description: "returns all the users"
     schema:
-      $ref: "#/definitions/categories"
+      $ref: "#/definitions/users"
   400:
-    description: "Page not found"
+    description: "Page not found or 'limit' and 'page' not in integer format "
     schema:
       $ref: "#/definitions/invalid_query_type"
-securityDefinitions:
-    Bearer:
-        type: apiKey
-        name: Authorization
-        in: header
-security:
-  Bearer: []
 definitions:
-  category-array:
+  user-array:
     type: "object"
     required:
       - "name"
     properties:
       id:
         type: "integer"
-        format: "int64"
-      name:
+        example: 1
+      username:
         type: "string"
-        example: "Rice Category"
-      date_created:
+        example: "janedow"
+      fullname:
         type: "string"
-        format: "date-time"
-      date_modified:
-        type: "string"
-        format: "date-time"
+        example: "Jane Dow"
       per_page:
         type: "int"
         example: 20
@@ -70,10 +60,10 @@ definitions:
       total_items_returned:
         type: "int"
         example: 1
-  categories:
+  users:
     type: "array"
     items:
-      $ref: "#/definitions/category-array"
+      $ref: "#/definitions/user-array"
   invalid_query_type:
     type: "object"
     properties:

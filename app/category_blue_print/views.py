@@ -36,38 +36,41 @@ def categories_view():
             return error, 401
     # get all categories
     elif request.method == "GET":
-        limit = request.args.get('limit') or 20
-        page = request.args.get('page') or 1
+        try:
+            limit = request.args.get('limit') or 20
+            page = request.args.get('page') or 1
 
-        limit = int(limit)
-        page = int(page)
+            limit = int(limit)
+            page = int(page)
 
-        # GET all the categories created by this user
-        categories = Category.query.paginate(per_page=limit, page=page, error_out=False)
-        results = []
+            # GET all the categories created by this user
+            categories = Category.query.paginate(per_page=limit, page=page, error_out=False)
+            results = []
 
-        for cat in categories.items:
-            obj = {
-                'id': cat.id,
-                'name': cat.name,
-                'date_created': cat.date_created,
-                'date_modified': cat.date_modified,
-                'created_by': cat.created_by,
-                'per_page': categories.per_page,
-                'page_number': categories.page,
-                'total_items_returned': categories.total
-            }
-            results.append(obj)
+            for cat in categories.items:
+                obj = {
+                    'id': cat.id,
+                    'name': cat.name,
+                    'date_created': cat.date_created,
+                    'date_modified': cat.date_modified,
+                    'created_by': cat.created_by,
+                    'per_page': categories.per_page,
+                    'page_number': categories.page,
+                    'total_items_returned': categories.total
+                }
+                results.append(obj)
 
-        if results:
-            return make_response(jsonify(results)), 200
-        else:
-            return make_response(jsonify({
-                'message': 'No Content On This Page',
-                'per_page': categories.per_page,
-                'page_number': categories.page,
-                'total_items_returned': categories.total
-            })), 200
+            if results:
+                return make_response(jsonify(results)), 200
+            else:
+                return make_response(jsonify({
+                    'message': 'No Content On This Page',
+                    'per_page': categories.per_page,
+                    'page_number': categories.page,
+                    'total_items_returned': categories.total
+                })), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
 
 @swag_from('swagger_docs/put_category_by_id.yaml', methods=['PUT'])
@@ -129,39 +132,40 @@ def search_category():
         name = request.args.get('q') or " "
         limit = request.args.get('limit') or 20
         page = request.args.get('page') or 1
+        try:
+            name = str(name)
+            limit = int(limit)
+            page = int(page)
 
-        name = str(name)
-        print("name here: ", name)
-        limit = int(limit)
-        page = int(page)
+            categories = Category.query.filter(Category.name.like('%' + name + '%')) \
+                .paginate(per_page=limit, page=page, error_out=False)
+            if not categories:
+                abort(404)
 
-        categories = Category.query.filter(Category.name.like('%' + name + '%')) \
-            .paginate(per_page=limit, page=page, error_out=False)
-        if not categories:
-            abort(404)
-
-        obj = []
-        for category in categories.items:
-            cat_obj = {
-                'id': category.id,
-                'name': category.name,
-                'date_created': category.date_created,
-                'date_modified': category.date_modified,
-                'created_by': category.created_by,
-                'per_page': categories.per_page,
-                'page_number': categories.page,
-                'total_items_returned': categories.total
-            }
-            obj.append(cat_obj)
-        if obj:
-            return make_response(jsonify(obj)), 200
-        else:
-            return make_response(jsonify({
-                'message': 'No Content On This Page or Search Not Found',
-                'limit_per_page': categories.per_page,
-                'page_number': categories.page,
-                'total_items_returned': categories.total
-            })), 200
+            obj = []
+            for category in categories.items:
+                cat_obj = {
+                    'id': category.id,
+                    'name': category.name,
+                    'date_created': category.date_created,
+                    'date_modified': category.date_modified,
+                    'created_by': category.created_by,
+                    'per_page': categories.per_page,
+                    'page_number': categories.page,
+                    'total_items_returned': categories.total
+                }
+                obj.append(cat_obj)
+            if obj:
+                return make_response(jsonify(obj)), 200
+            else:
+                return make_response(jsonify({
+                    'message': 'No Content On This Page or Search Not Found',
+                    'limit_per_page': categories.per_page,
+                    'page_number': categories.page,
+                    'total_items_returned': categories.total
+                })), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
 # Define the rule for the categories url --->  /categories or /categories?limit=<int:limit>&page=<int:page>
 category_blue_print.add_url_rule('/categories', view_func=categories_view, methods=['POST', 'GET'])

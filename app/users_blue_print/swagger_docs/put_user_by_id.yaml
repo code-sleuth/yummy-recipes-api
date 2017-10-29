@@ -1,0 +1,87 @@
+Updates user details by id
+Updates user details by id
+---
+tags:
+  - "User"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    type: "string"
+    description: "JWT token authentication"
+  - name: "id"
+    in: "path"
+    description: "ID of user to Edit"
+    required: true
+    type: "integer"
+    format: "int64"
+  - in: "body"
+    name: "body"
+    description: "The new details to update the user"
+    required: true
+    schema:
+      $ref: "#/definitions/user-update"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  200:
+    description: "returns the updated  user details"
+    schema:
+      $ref: "#/definitions/user"
+  400:
+    description: "User id not in database "
+    schema:
+      $ref: "#/definitions/invalid_query_type"
+definitions:
+  user-update:
+    type: "object"
+    properties:
+      old_password:
+        type: "string"
+        example: "old_password"
+      new_password:
+        type: "string"
+        example: "new_password"
+      fullname:
+        type: "string"
+        example: "new full name"
+  user:
+    type: "object"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        example: 1
+      username:
+        type: "string"
+        example: "username"
+      fullname:
+        type: "string"
+        example: "Full Name"
+  invalid_query_type:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "user id not in database"
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"

@@ -1,4 +1,3 @@
-import os
 import unittest
 import json
 from app import set_app, db
@@ -122,6 +121,85 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(log_out_data['message'], 'successfully logged out')
         self.assertEqual(log_out.status_code, 200)
 
+    def test_api_get_all_users(self):
+        # GET request test
+        reg = self.client().post('/auth/register', data=json.dumps(self.user_details), content_type='application/json')
+        reg_data = json.loads(reg.data.decode())
+        self.assertEqual(reg_data['message'], 'User registered successfully.')
+        self.assertEqual(reg.content_type, 'application/json')
+        self.assertEqual(reg.status_code, 201)
+        # login
+        log = self.client().post('/auth/login', data=json.dumps(self.user_login), content_type='application/json')
+        log_in = json.loads(log.data.decode())
+        self.assertEqual(log.status_code, 200)
+        self.assertEqual(log_in['message'], 'You logged in successfully.')
+        self.assertTrue(log_in['access_token'])
+        self.assertEqual(log.content_type, 'application/json')
+        # get all users
+        get_users = self.client().get('/users', headers=dict(Authorization=log_in['access_token']))
+        self.assertEqual(get_users.status_code, 200)
+        self.assertIn('xcode', str(get_users.data))
+
+    def test_get_user_by_id(self):
+        # GET request test
+        reg = self.client().post('/auth/register', data=json.dumps(self.user_details), content_type='application/json')
+        reg_data = json.loads(reg.data.decode())
+        self.assertEqual(reg_data['message'], 'User registered successfully.')
+        self.assertEqual(reg.content_type, 'application/json')
+        self.assertEqual(reg.status_code, 201)
+        # login
+        log = self.client().post('/auth/login', data=json.dumps(self.user_login), content_type='application/json')
+        log_in = json.loads(log.data.decode())
+        self.assertEqual(log.status_code, 200)
+        self.assertEqual(log_in['message'], 'You logged in successfully.')
+        self.assertTrue(log_in['access_token'])
+        self.assertEqual(log.content_type, 'application/json')
+        # get all users
+        get_users = self.client().get('/users/1', headers=dict(Authorization=log_in['access_token']))
+        self.assertEqual(get_users.status_code, 200)
+        self.assertIn('xcode', str(get_users.data))
+
+    def test_user_can_be_edited(self):
+        # PUT request
+        # GET request test
+        reg = self.client().post('/auth/register', data=json.dumps(self.user_details), content_type='application/json')
+        reg_data = json.loads(reg.data.decode())
+        self.assertEqual(reg_data['message'], 'User registered successfully.')
+        self.assertEqual(reg.content_type, 'application/json')
+        self.assertEqual(reg.status_code, 201)
+        # login
+        log = self.client().post('/auth/login', data=json.dumps(self.user_login), content_type='application/json')
+        log_in = json.loads(log.data.decode())
+        self.assertEqual(log.status_code, 200)
+        self.assertEqual(log_in['message'], 'You logged in successfully.')
+        self.assertTrue(log_in['access_token'])
+        self.assertEqual(log.content_type, 'application/json')
+        # get all users
+        update_user = self.client().put('/users/1', headers=dict(Authorization=log_in['access_token']),
+                                        data=json.dumps({"fullname": "new_fullname"}))
+        self.assertEqual(update_user.status_code, 200)
+        self.assertIn('new_fullname', str(update_user.data))
+
+    def test_user_can_be_deleted(self):
+        # DELETE request
+        # GET request test
+        reg = self.client().post('/auth/register', data=json.dumps(self.user_details), content_type='application/json')
+        reg_data = json.loads(reg.data.decode())
+        self.assertEqual(reg_data['message'], 'User registered successfully.')
+        self.assertEqual(reg.content_type, 'application/json')
+        self.assertEqual(reg.status_code, 201)
+        # login
+        log = self.client().post('/auth/login', data=json.dumps(self.user_login), content_type='application/json')
+        log_in = json.loads(log.data.decode())
+        self.assertEqual(log.status_code, 200)
+        self.assertEqual(log_in['message'], 'You logged in successfully.')
+        self.assertTrue(log_in['access_token'])
+        self.assertEqual(log.content_type, 'application/json')
+        # delete user by id
+        delete_user = self.client().delete('/users/1', headers=dict(Authorization=log_in['access_token']))
+        self.assertEqual(delete_user.status_code, 200)
+        self.assertIn('deleted', str(delete_user.data))
+
     """
     TEST CATEGORY END POINTS
     """
@@ -155,7 +233,7 @@ class AuthTestCase(unittest.TestCase):
         self.assertEqual(get_category_data[0]['total_items_returned'], 1)
 
         # search category and paginate
-        search_category = self.client().get('/categories/search?q=c&limit=2&page=1',
+        search_category = self.client().get('/categories/search?q=Rice&limit=2&page=1',
                                             headers=dict(Authorization=logged_in['access_token']))
         self.assertEqual(search_category.status_code, 200)
         search_category_data = json.loads(search_category.data.decode('utf-8'))

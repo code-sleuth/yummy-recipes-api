@@ -1,8 +1,8 @@
-Returns all categories in the database
-Returns all categories in the database
+Search all recipes created by current user by name q
+Search all recipes created by current user by name q
 ---
 tags:
-  - "Category"
+  - "Recipe"
 produces:
   - "application/json"
 parameters:
@@ -10,14 +10,19 @@ parameters:
     in: "header"
     required: true
     type: "string"
-    description: "JWT token authentication"
+    description: "JWT authentication"
+  - name: "q"
+    in: "query"
+    required: true
+    description: "Search wild card"
+    type: "string"
   - name: "page"
     in: "query"
     description: "Pagination current page"
     type: "integer"
   - name: "limit"
     in: "query"
-    description: "Pagination number of categories per page"
+    description: "Pagination number of recipes per page"
     type: "integer"
 responses:
   403:
@@ -29,22 +34,15 @@ responses:
     schema:
       $ref: "#/definitions/logged_out"
   200:
-    description: "returns all the categories"
+    description: "All recipe name like search query"
     schema:
-      $ref: "#/definitions/categories"
+      $ref: "#/definitions/recipes"
   400:
     description: "Page not found"
     schema:
       $ref: "#/definitions/invalid_query_type"
-securityDefinitions:
-    Bearer:
-        type: apiKey
-        name: Authorization
-        in: header
-security:
-  Bearer: []
 definitions:
-  category-array:
+  recipe:
     type: "object"
     required:
       - "name"
@@ -52,13 +50,25 @@ definitions:
       id:
         type: "integer"
         format: "int64"
+      category_id:
+        type: "int"
+        example: 1
+      created_by:
+        type: "int"
+        example: 1
       name:
         type: "string"
-        example: "Rice Category"
+        example: "Rice Spice Recipe"
+      details:
+        type: "string"
+        example: "Some where in the tropics.."
+      ingredients:
+        type: "string"
+        example: "chili peppers, green peppers"
       date_created:
         type: "string"
         format: "date-time"
-      date_modified:
+      date_modified on:
         type: "string"
         format: "date-time"
       per_page:
@@ -70,16 +80,16 @@ definitions:
       total_items_returned:
         type: "int"
         example: 1
-  categories:
+  recipes:
     type: "array"
     items:
-      $ref: "#/definitions/category-array"
+      $ref: "#/definitions/recipe"
   invalid_query_type:
     type: "object"
     properties:
       message:
         type: "string"
-        default: "limit and page query parameters should be integers"
+        default: "Page not found"
   unauthorized:
     type: "object"
     properties:
