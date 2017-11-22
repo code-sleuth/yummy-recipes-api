@@ -10,7 +10,7 @@ env:
 services:
   - postgresql
 before_script:
-  - "psql -c 'create database test_db;' -U code"
+  - "psql -c 'create database test_db;' -U postgres"
 script:
   - nosetests --with-coverage --cover-erase --cover-package=tests
 after_success:

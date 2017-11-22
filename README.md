@@ -39,6 +39,7 @@ A RESTful API for yummy recipes
     ``` pip install -r requirements.txt ```
 
 5. Set up postgresql database and copy connection string for example.
+
     ``` DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<database_name>' ```
 
     and
