@@ -12,6 +12,6 @@ services:
 before_script:
   - "psql -c 'create database test_db;' -U postgres"
 script:
-  - nosetests --with-coverage --cover-erase --cover-package=tests
+  - python manage.py test --with-coverage --cover-erase --cover-package=tests
 after_success:
   - coveralls
