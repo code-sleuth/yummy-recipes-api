@@ -1,0 +1,60 @@
+Delete selected recipe by id
+Delete selected recipe by id
+---
+tags:
+  - "Recipe"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    type: "string"
+    description: "JWT authentication"
+  - name: "id"
+    in: "path"
+    required: true
+    description: "Recipe ID"
+    type: "integer"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  200:
+    description: "Recipe with given id deleted successfully"
+    schema:
+      $ref: "#/definitions/recipe-deleted"
+  400:
+    description: "Page not found"
+    schema:
+      $ref: "#/definitions/invalid_query_type"
+definitions:
+  recipe-deleted:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Recipe deleted successfully"
+  invalid_query_type:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "Page not found"
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"

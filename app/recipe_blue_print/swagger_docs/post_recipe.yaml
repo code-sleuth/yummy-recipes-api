@@ -1,0 +1,106 @@
+Adds a New Recipe
+Creates a new recipe in the category specified by id in the url
+---
+tags:
+  - "Recipe"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    description: "JWT authentication"
+    type: "string"
+  - in: "body"
+    name: "body"
+    description: "The new recipe information"
+    required: true
+    schema:
+      $ref: "#/definitions/recipe-post"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  201:
+    description: "Successfully created  recipe"
+    schema:
+      $ref: "#/definitions/recipe"
+  400:
+    description: "The data you sent was in the wrong format"
+    schema:
+      $ref: "#/definitions/invalid_data"
+definitions:
+  recipe-post:
+    type: "object"
+    required:
+    - "name"
+    properties:
+      category_id:
+        type: "int"
+        example: 1
+      created_by:
+        type: "int"
+        example: 1
+      name:
+        type: "string"
+        example: "Rice Spice Recipe"
+      details:
+        type: "string"
+        example: "Some where in the tropics i thought..."
+      ingredients:
+        type: "string"
+        exaple: "chili peppers, green peppers"
+  recipe:
+    type: "object"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      category_id:
+        type: "int"
+        example: 1
+      created_by:
+        type: "int"
+        example: 1
+      name:
+        type: "string"
+        example: "Rice Spice Recipe"
+      details:
+        type: "string"
+        example: "Some where in the tropics i thought of.."
+      ingredients:
+        type: "string"
+        example: "chili peppers, green peppers"
+      date_created:
+        type: "string"
+        format: "date-time"
+      date_modified on:
+        type: "string"
+        format: "date-time"
+  invalid_data:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "The data you sent was in the wrong format"
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"

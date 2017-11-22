@@ -6,4 +6,4 @@ __pycache__/
 app.pyc
 models.pyc
 .env
-migrations/
+*.pyc

@@ -1,93 +1,74 @@
-from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-from flask import request, jsonify, abort, json
+from flask import redirect, Flask
+from flasgger import Swagger
+from instance.config import app_config
 
 # initialize sql-alchemy
 db = SQLAlchemy()
 
 
-def set_app():
-    from app.models import User
-    app = FlaskAPI(__name__, instance_relative_config=True)
+def set_app(config_name):
+    from app.models import User, Category, Recipe
+    app = Flask(__name__)
+    app.config.from_object(app_config[config_name])
+    app.config.from_pyfile('../instance/config.py')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['FLASK_APP'] = "main_app.py"
-    app.config['SECRET'] = "i wont tell if you do not"
-    app.config['APP_SETTINGS'] = "development"
-    app.config['DATABASE_URL'] = "postgres://postgres:@localhost/flask_api"
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://postgres:@localhost/flask_api"
-    app.config['TESTING'] = True
+
+    app.config['SWAGGER'] = {
+        'swagger': '2.0',
+        'title': 'yummy-recipes-api',
+        'description': "The innovative yummy recipes app is an application that allows\
+        users to create, save and share meeting the needs of keeping track of awesome food recipes.\
+        \nThis is a RESTful API built in python using the Flask Framework.\
+        \n GitHub Repository: 'https://github.com/code-sleuth/yummy-recipes-api'",
+        'basePath': '/',
+        'version': '0.1.0',
+        'contact': {
+            'Developer': 'Ibrahim Mbaziira',
+            'email': 'code.ibra@gmail.com',
+            'Company': 'Andela'
+        },
+        'schemes': [
+            'http',
+            'https'
+        ],
+        'license': {
+            'name': 'MIT'
+        },
+        'tags': [
+            {
+                'name': 'User',
+                'description': 'The basic unit of authentication'
+            },
+            {
+                'name': 'Category',
+                'description': 'Categories help to group recipes that belong together'
+            },
+            {
+                'name': 'Recipe',
+                'description': 'A food recipe with certain details and ingredients'
+            },
+        ],
+        'specs_route': '/swagger_docs/'
+    }
+
     db.init_app(app)
+    swagger = Swagger(app)
 
-    @app.route('/users/', methods=['POST', 'GET'])
-    def users():
-        if request.method == "POST":
-            username = str(request.data.get('username', ''))
-            fullname = str(request.data.get('fullname', ''))
-            password = str(request.data.get('password', ''))
-            if username and fullname and password:
-                user = User(username, fullname, password)
-                user.save()
-                response = {
-                    'id': user.id,
-                    'username': user.username,
-                    'fullname': user.fullname,
-                    'password': user.password
-                }
-                response = json.dumps(response)
-                return response, 201
-        else:
+    # index
+    @app.route('/')
+    def index():
+        return redirect('/swagger_docs/')
 
-            users = User.get_all_users()
-            results = []
-
-            for user in users:
-                obj = {
-                    'id': user.id,
-                    'username': user.username,
-                    'fullname': user.fullname
-                }
-            results.append(obj)
-            response = json.dumps(results)
-            return response, 200
-
-    @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-    def edit_by_id(id, **kwargs):
-        user = User.query.filter_by(id=id).first()
-        if not user:
-            # abort
-            abort(404)
-
-        if request.method == 'DELETE':
-            user.delete()
-            return {
-                "message": "users {} deleted".format(user.id)
-            }, 200
-
-        elif request.method == "PUT":
-            username = str(request.data.get('username'))
-            print(username)
-            user.username = username
-            user.save()
-            response = jsonify({
-                'id': user.id,
-                'username': user.username,
-                'fullname': user.fullname
-            })
-            response.status_code = 200
-            return response
-        else:
-            # GET
-            response = jsonify({
-                'id': user.id,
-                'username': user.username,
-                'fullname': user.fullname
-            })
-            response.status_code = 200
-            return response
-
-    # import the authentication blueprint and register it on the app
+    # import the authentication blueprints and register them on the app
     from .auth import auth_blueprint
+    from .users_blue_print import users_blue_print
+    from .category_blue_print import category_blue_print
+    from .recipe_blue_print import recipe_blue_print
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(users_blue_print)
+    app.register_blueprint(category_blue_print)
+    app.register_blueprint(recipe_blue_print)
 
     return app
 
