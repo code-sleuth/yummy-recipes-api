@@ -16,7 +16,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Configurations for Testing, with a separate test database."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgres://code:inetutils@localhost/test_db'
+    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DB_URL')
     DEBUG = True
     SECRET = 'i wont tell if you dont'
 
@@ -28,6 +28,7 @@ class StagingConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
+
 
 app_config = {
     'development': DevelopmentConfig,
