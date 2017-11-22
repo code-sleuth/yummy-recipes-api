@@ -12,7 +12,7 @@ class AuthTestCase(unittest.TestCase):
         self.client = self.app.test_client
 
         with self.app.app_context():
-            # This is the user test json data with a predefined email and password
+            # This is the user test json data with a predefined username and password
             self.user_details = {
                 'username': 'xcode',
                 'fullname': 'john dow',

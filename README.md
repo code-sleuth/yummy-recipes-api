@@ -12,114 +12,88 @@ A RESTful API for yummy recipes
 
 [Project Hosted on Heroku](https://yummy-recipes-api-pro.herokuapp.com)
 
-## Start application
-1. Clone the repository to your computer
+## How to run flask application
+1. Create a folder <yummy-recipes> on your computer
+   Clone repository to your computer into created folder
 
     ```
     git clone https://github.com/code-sleuth/yummy-recipes-api.git
     ```
-    
-2. In current clone directory, Create your virtual environment and start it.
-   
-   Linux and mac
-    ```
-    virtualenv <envname>
-    ```
-    For windows users:
-    ```
-    python -m venv env
-
-    env\Scripts\activate
-    ``` 
-
-3. Install the packages in requirements.txt
-
-    ``` 
-    pip install -r requirements.txt 
-    ```
-    
-    #### Run migration
-    
-    ```
-        python manage.py db init
-    ```
-    
-    ```
-        python manage.py db migrate
-    ```
-    
-    ```
-        python manage.py db upgrade
-    ```
-    
-    
-4. Run the api
+2. Navigate into created folder
 
     ```
-     $: python main_app.py
+    cd yummy-recipes
     ```
-    
-    api runs on port 5005
-    
-5. Use postman to navigate the endpoints in the api.
+3. Create and activate  virtual environment.
 
-### Endpoints
+    ```
+        $ virtualenv  venv
+
+        $ source venv/bin/activate
+    ```
+
+    More on setting up Virtual environment: [how to set up virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
+
+4. Install the packages in requirements.txt
+
+    ``` pip install -r requirements.txt ```
+
+5. Set up postgresql database and copy connection string for example.
+    ``` DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<database_name>' ```
+
+    and
+
+    ``` DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<test_database_name>' ```
+
+    How to setup postgresql: [how to setup postgresql mac](https://gist.github.com/sgnl/609557ebacd3378f3b72)
+
+6. To start the api, using terminal, run the following commands
+
+    ```export FLASK_APP='main_app.py'```
+
+    ```export APP_SETTINGS='development'```
+
+    ```export SECRET='i wont tell if you dont'```
+
+    ```export DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<database_name>'```
+
+    ```export DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<test_database_name>```
+
+    ```flask run ```
+7. Using postman, the url to run the api locally is ```http://127.0.0.1:5000/```.
+
+8. On the web, visit the url ```https://yummy-recipes-api-pro.herokuapp.com/swagger_docs/```
+
+9. Using postman with web url ```https://yummy-recipes-api-pro.herokuapp.com/```
+
+    
+10.Sample: Use postman to navigate the endpoints in the api.
+
+### Endpoints Example
 
 -  Register new user
-
+    Web url:
     ```
-    /auth/register
+    https://yummy-recipes-api-pro.herokuapp.com/auth/register
     ``` 
+    Locally:
+    ```
+    http://127.0.0.1:5000/auth/register
+    ```
 
     ```
     {
-        "username": "username_without_spaces",
+        "username": "username",
         "fullname": "Full Name",
         "password": "Pass"
     }
     ```
-    
--  Login
 
-    ```
-    /auth/login
-    ``` 
-    Methods = ['POST']
-        
-    ```
-    {
-        "username": "user_name_here",
-        "password": "pass"
-    }
-    ```
-    
-- Fetch All Users
-
-    ```
-    /users/
-    ``` 
-    Methods = ['GET']
-        
-- Edit user details
-
-    ```
-    /users/<int:id>
-    ``` 
-    Methods = ['GET', 'PUT', 'DELETE']
-    
-        ```
-        /users/1
-        ``` 
-        
-        Update username:
-        ```
-            {
-                "username": "new_user_name"
-            }
-        ```
+- More on the end point is availabe online via the documentation
+  ```
+    https://yummy-recipes-api-pro.herokuapp.com/swagger_docs/
+  ```
        
-   
-
 
 * #### Author
     ***Ibrahim Mbaziira***
