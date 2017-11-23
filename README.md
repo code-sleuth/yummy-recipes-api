@@ -58,7 +58,7 @@ A RESTful API for yummy recipes
 
     ```export DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<database_name>'```
 
-    ```export DATABASE_URL='postgres://<db_user_name>:<password>@localhost/<test_database_name>```
+    ```export TEST_DB_URL='postgres://<db_user_name>:<password>@localhost/<test_database_name>```
 
     ```flask run ```
 7. Using postman, the url to run the api locally is ```http://127.0.0.1:5000/```.
