@@ -14,8 +14,10 @@ class User(db.Model):
     fullname = db.Column(db.String(50))
     password = db.Column(db.String(500))
 
-    recipes = db.relationship('Recipe', backref="users", lazy='dynamic', cascade="all, delete-orphan")
-    categories = db.relationship('Category', backref="users", lazy='dynamic', cascade="all, delete-orphan")
+    recipes = db.relationship(
+        'Recipe', backref="users", lazy='dynamic', cascade="all, delete-orphan")
+    categories = db.relationship(
+        'Category', backref="users", lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, username='', fullname='', password=''):
         self.username = username
@@ -42,7 +44,7 @@ class User(db.Model):
         try:
             # set up a payload with an expiration date
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=5),
+                'exp': datetime.utcnow() + timedelta(minutes=60),
                 'iat': datetime.utcnow(),
                 'sub': userid
             }
@@ -60,7 +62,8 @@ class User(db.Model):
     def decode_token(token):
         try:
             payload = jwt.decode(token, current_app.config.get('SECRET'))
-            is_blacklisted_token = BlackListToken.check_blacklist(auth_token=token)
+            is_blacklisted_token = BlackListToken.check_blacklist(
+                auth_token=token)
             if is_blacklisted_token:
                 return 'Token Blacklisted. Please log in'
             else:
@@ -81,10 +84,12 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(
+    ), onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    rec = db.relationship('Recipe', backref="categories", lazy='dynamic', cascade="all, delete-orphan")
+    rec = db.relationship('Recipe', backref="categories",
+                          lazy='dynamic', cascade="all, delete-orphan")
 
     def __init__(self, name="", created_by=""):
         self.name = name
@@ -117,7 +122,8 @@ class Recipe(db.Model):
     details = db.Column(db.String(500))
     ingredients = db.Column(db.String(200))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(
+    ), onupdate=db.func.current_timestamp())
     created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
     def __init__(self, category_id='', name='', details='', ingredients='', created_by=''):
@@ -147,7 +153,8 @@ class BlackListToken(db.Model):
     __tablename__ = 'blacklist_tokens'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     token = db.Column(db.String(500), unique=True, nullable=False)
-    blacklisted_on = db.Column(db.DateTime, default=db.func.current_timestamp())
+    blacklisted_on = db.Column(
+        db.DateTime, default=db.func.current_timestamp())
 
     def __init__(self, token):
         self.token = token

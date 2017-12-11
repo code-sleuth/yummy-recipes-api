@@ -22,8 +22,14 @@ def recipes_view():
         details = str(post_data['details'])
         ingredients = str(post_data['ingredients'])
 
+        db_recipe_names = Recipe.query.filter_by(name=name)
+        for n in db_recipe_names:
+            if name.lower() == n.name.lower():
+                return make_response(jsonify({"message": "recipe name already in the database"})), 409
+
         if category_id and created_by and name and details and ingredients:
-            recipe = Recipe(category_id, name, details, ingredients, created_by)
+            recipe = Recipe(category_id, name, details,
+                            ingredients, created_by)
             recipe.save()
 
             response = {
@@ -49,7 +55,8 @@ def recipes_view():
             limit = int(limit)
             page = int(page)
             # get all recipes created by this user
-            recipes = Recipe.query.filter_by(created_by=user.id).paginate(per_page=limit, page=page, error_out=False)
+            recipes = Recipe.query.filter_by(created_by=user.id).paginate(
+                per_page=limit, page=page, error_out=False)
             res = []
             for recipe in recipes.items:
                 obj = {
@@ -158,7 +165,7 @@ def search_by_name():
             limit = int(limit)
             page = int(page)
 
-            recipe_by_name = Recipe.query.filter_by(created_by=user.id).filter(Recipe.name.like('%' + q + '%'))\
+            recipe_by_name = Recipe.query.filter_by(created_by=user.id).filter(Recipe.name.ilike('%' + q + '%'))\
                 .paginate(per_page=limit, page=page, error_out=False)
             if not recipe_by_name:
                 abort(404)
@@ -189,10 +196,13 @@ def search_by_name():
         except Exception:
             return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
-# Define the rule for recipes url ---> /recipes or /recipes?limit=<int:limit>&page=<int:page>
-recipe_blue_print.add_url_rule('/recipes', view_func=recipes_view, methods=['POST', 'GET'])
-# Define the rule for recipes url ---> /recipes/<int:id>
-recipe_blue_print.add_url_rule('/recipes/<int:id>', view_func=recipes_view_edit, methods=['DELETE', 'PUT', 'GET'])
-# Define the rule for recipes url ---> /recipes/search?q=<sting:q>&limit=<int:limit>&page=<int:page>'
-recipe_blue_print.add_url_rule('/recipes/search', view_func=search_by_name, methods=['GET'])
 
+# Define the rule for recipes url ---> /recipes or /recipes?limit=<int:limit>&page=<int:page>
+recipe_blue_print.add_url_rule(
+    '/recipes', view_func=recipes_view, methods=['POST', 'GET'])
+# Define the rule for recipes url ---> /recipes/<int:id>
+recipe_blue_print.add_url_rule(
+    '/recipes/<int:id>', view_func=recipes_view_edit, methods=['DELETE', 'PUT', 'GET'])
+# Define the rule for recipes url ---> /recipes/search?q=<sting:q>&limit=<int:limit>&page=<int:page>'
+recipe_blue_print.add_url_rule(
+    '/recipes/search', view_func=search_by_name, methods=['GET'])

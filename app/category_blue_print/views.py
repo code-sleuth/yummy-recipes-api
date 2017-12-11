@@ -19,6 +19,11 @@ def categories_view():
         name = str(post_data['name'])
 
         if name:
+            db_names = Category.query.filter_by(name=name)
+            for n in db_names:
+                if n.name.lower() == name.lower():
+                    return make_response(jsonify({"message": "category name already in database"})), 409
+
             cat = Category(name=name, created_by=user.id)
             cat.save()
             return make_response(jsonify({
@@ -44,7 +49,8 @@ def categories_view():
             page = int(page)
 
             # GET all the categories created by this user
-            categories = Category.query.paginate(per_page=limit, page=page, error_out=False)
+            categories = Category.query.paginate(
+                per_page=limit, page=page, error_out=False)
             results = []
 
             for cat in categories.items:
@@ -89,8 +95,8 @@ def categories_view_edit(id):
     if request.method == 'DELETE':
         category.delete()
         return make_response(jsonify({
-                   "message": "Category with [ID: {}] Deleted Successfully".format(category.id)
-               })), 200
+            "message": "Category with [ID: {}] Deleted Successfully".format(category.id)
+        })), 200
 
     elif request.method == "PUT":
         post_data = request.get_json(force=True)
@@ -137,7 +143,7 @@ def search_category():
             limit = int(limit)
             page = int(page)
 
-            categories = Category.query.filter(Category.name.like('%' + name + '%')) \
+            categories = Category.query.filter(Category.name.ilike('%' + name + '%')) \
                 .paginate(per_page=limit, page=page, error_out=False)
             if not categories:
                 abort(404)
@@ -167,9 +173,13 @@ def search_category():
         except Exception:
             return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
+
 # Define the rule for the categories url --->  /categories or /categories?limit=<int:limit>&page=<int:page>
-category_blue_print.add_url_rule('/categories', view_func=categories_view, methods=['POST', 'GET'])
+category_blue_print.add_url_rule(
+    '/categories', view_func=categories_view, methods=['POST', 'GET'])
 # Define the rule for the categories url --->  /categories/<int:id>
-category_blue_print.add_url_rule('/categories/<int:id>', view_func=categories_view_edit, methods=['DELETE', 'PUT', 'GET'])
+category_blue_print.add_url_rule(
+    '/categories/<int:id>', view_func=categories_view_edit, methods=['DELETE', 'PUT', 'GET'])
 # Define the rule for the categories url ---> /categories/<string:wild_card>
-category_blue_print.add_url_rule('/categories/search', view_func=search_category, methods=['GET'])
+category_blue_print.add_url_rule(
+    '/categories/search', view_func=search_category, methods=['GET'])

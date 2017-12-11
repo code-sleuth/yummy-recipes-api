@@ -7,3 +7,4 @@ app.pyc
 models.pyc
 .env
 *.pyc
+.gitignore
