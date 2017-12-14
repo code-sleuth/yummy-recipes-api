@@ -34,6 +34,7 @@ definitions:
       - "username"
       - "fullname"
       - "password"
+      - "email"
     properties:
       username:
         type: "string"
@@ -45,6 +46,10 @@ definitions:
         type: "string"
         format: "password"
         example: "pass6"
+      email:
+        type: "string"
+        format: "email"
+        example: "jane.dow@gmail.com" 
   invalid_data:
     type: "object"
     properties:

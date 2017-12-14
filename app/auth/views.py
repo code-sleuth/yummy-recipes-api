@@ -40,7 +40,7 @@ class RegistrationView(MethodView):
             # check if posted username is already in the database
             if "username" not in post_data.keys():
                 return make_response(jsonify({"message": "json body must contain username key"})), 500
-            if len(post_data.keys()) > 3:
+            if len(post_data.keys()) > 4:
                 return make_response(jsonify({"message": "too many arguments in json body"})), 500
             user = User.query.filter_by(username=post_data['username']).first()
             if not user:
@@ -50,15 +50,21 @@ class RegistrationView(MethodView):
                     username = post_data['username']
                     fullname = post_data['fullname']
                     password = post_data['password']
+                    email = post_data['email']
                     user = User(username=username,
-                                fullname=fullname, password=password)
-                    user.save()
+                                fullname=fullname, password=password, email=email)
+                    if user.is_number(username) == True:
+                        return make_response(jsonify({"message": "username cannot be a numeric value"}))
+                    if user.validate_user_email(email) == False:
+                        return make_response(jsonify({"message": "invalid email format"}))
+                    else:
+                        user.save()
 
-                    response = {
-                        'message': 'User registered successfully.'
-                    }
-                    # return user registered successfully message
-                    return make_response(jsonify(response)), 201
+                        response = {
+                            'message': 'User registered successfully.'
+                        }
+                        # return user registered successfully message
+                        return make_response(jsonify(response)), 201
                 except Exception as ex:
                     # Return error message
                     response = {
@@ -75,7 +81,7 @@ class RegistrationView(MethodView):
                 return make_response(jsonify(response)), 202
 
         except Exception as x:
-            return make_response(jsonify({"message": str(x)})), 500
+            return make_response(jsonify({"message": "use appropriate values for username and fullname"})), 500
 
 
 # class to handle user login and token generation

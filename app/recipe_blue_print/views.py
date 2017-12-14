@@ -96,7 +96,8 @@ def recipes_view_edit(id):
     if not user:
         return make_response(jsonify({"message": "You have no access rights"})), 403
 
-    recipe = Recipe.query.filter_by(id=id).first()
+    recipe = Recipe.query.filter_by(
+        created_by=user.id).filter_by(id=id).first()
     if not recipe:
         return make_response(jsonify({'message': 'Recipe Not Found'})), 404
 

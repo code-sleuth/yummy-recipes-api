@@ -5,6 +5,7 @@ cffi==1.11.1
 click==6.7
 coverage==4.4.1
 cryptography==1.7.2
+email_validator==1.0.3
 flasgger==0.8.0
 Flask==0.12.2
 Flask-API==1.0

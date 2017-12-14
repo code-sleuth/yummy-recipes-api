@@ -8,3 +8,5 @@ models.pyc
 .env
 *.pyc
 .gitignore
+/migrations/
+/cover/

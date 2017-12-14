@@ -4,42 +4,98 @@ from flask import current_app
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
+from email_validator import validate_email, EmailNotValidError
+import unicodedata
 
 
-# class User to create user database model
+"""
+class User that represents the user database model
+"""
+
+
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), unique=True)
     fullname = db.Column(db.String(50))
     password = db.Column(db.String(500))
+    email = db.Column(db.String(256), unique=True)
 
     recipes = db.relationship(
         'Recipe', backref="users", lazy='dynamic', cascade="all, delete-orphan")
     categories = db.relationship(
         'Category', backref="users", lazy='dynamic', cascade="all, delete-orphan")
 
-    def __init__(self, username='', fullname='', password=''):
+    def __init__(self, username='', fullname='', password='', email=''):
         self.username = username
         self.fullname = fullname
         self.password = generate_password_hash(password)
-
+        self.email = email
+    """
+    Static function to return all users in the database
+    """
     @staticmethod
     def get_all_users():
         return User.query.all()
+
+    """
+    save function that commits user instance to be saved to the database
+    """
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
+    """
+    delete user from database
+    """
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
 
+    """
+    Function to validate input password
+    """
+
     def validate_password(self, password):
         return check_password_hash(self.password, password)
 
-    # generate token for user
+    """
+    Function to validate provided email address
+    """
+
+    def validate_user_email(self, email):
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+            return True
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            print(str(e))
+            return False
+
+    """
+    function to check if provided string is an integer
+    """
+    @staticmethod
+    def is_number(username):
+        try:
+            float(username)
+            return True
+        except ValueError:
+            pass
+
+        try:
+            unicodedata.numeric(username)
+            return True
+        except (TypeError, ValueError):
+            return False
+
+    """
+    Generate token for user
+    """
+
     def user_generate_token(self, userid):
         try:
             # set up a payload with an expiration date
@@ -57,7 +113,9 @@ class User(db.Model):
         except Exception as ex:
             return str(ex)
 
-    # decode the token
+    """
+    Function to decode the token
+    """
     @staticmethod
     def decode_token(token):
         try:
@@ -79,6 +137,11 @@ class User(db.Model):
         return "<User: {}>".format(self.username)
 
 
+"""
+class Category that represents the category database model
+"""
+
+
 class Category(db.Model):
     __tablename__ = "categories"
     id = db.Column(db.Integer, primary_key=True)
@@ -94,17 +157,29 @@ class Category(db.Model):
     def __init__(self, name="", created_by=""):
         self.name = name
         self.created_by = created_by
+    """
+    function to update category name
+    """
 
     def new_category(self, name):
         self.name = name
+    """
+    function to save category instance
+    """
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
+    """
+    static method to return all categories
+    """
     @staticmethod
     def get_all_categories():
         return Category.query.all()
+    """
+    function to delete current category instance
+    """
 
     def delete(self):
         db.session.delete(self)
@@ -112,6 +187,11 @@ class Category(db.Model):
 
     def __repr__(self):
         return "<Category: {}>".format(self.name)
+
+
+"""
+class Recipe that represents the recipe database model
+"""
 
 
 class Recipe(db.Model):
@@ -133,13 +213,23 @@ class Recipe(db.Model):
         self.details = details
         self.ingredients = ingredients
 
+    """
+    Function to return all the recipes in the database
+    """
     @staticmethod
     def get_all_recipes():
         return Recipe.query.all()
 
+    """
+    save function that commits category instance to be saved to the database
+    """
+
     def save(self):
         db.session.add(self)
         db.session.commit()
+    """
+    delete function to r3move recipe from database
+    """
 
     def delete(self):
         db.session.delete(self)
@@ -147,6 +237,11 @@ class Recipe(db.Model):
 
     def __repr__(self):
         return "<Recipe: {}>".format(self.name)
+
+
+"""
+Class to blacklist expired tokens
+"""
 
 
 class BlackListToken(db.Model):
@@ -158,11 +253,17 @@ class BlackListToken(db.Model):
 
     def __init__(self, token):
         self.token = token
+    """
+    function to save expired token
+    """
 
     def save(self):
         db.session.add(self)
         db.session.commit()
 
+    """
+    function to check if token is blacklisted
+    """
     def check_blacklist(auth_token):
         # check whether token has been blacklisted
         res = BlackListToken.query.filter_by(token=str(auth_token)).first()
