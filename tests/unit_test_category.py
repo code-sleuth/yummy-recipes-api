@@ -29,16 +29,10 @@ class CategoryTest(AuthTestCase):
     def test_get_all_categories(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode('utf-8'))
-        self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode('utf-8'))
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create new category
         post_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
@@ -58,21 +52,14 @@ class CategoryTest(AuthTestCase):
     def test_serach_category(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode('utf-8'))
-        self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode('utf-8'))
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create new category
         post_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                        data=json.dumps(self.category_details))
-        self.assertEqual(post_data.status_code, 201)
 
         # search category and paginate
         search_category = self.client().get('/categories/search?q=Rice&limit=2&page=1',
@@ -86,21 +73,14 @@ class CategoryTest(AuthTestCase):
     def test_update_category(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode('utf-8'))
-        self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode('utf-8'))
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create new category
         post_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                        data=json.dumps(self.category_details))
-        self.assertEqual(post_data.status_code, 201)
 
         # update category
         update = self.client().put('/categories/1', headers=dict(Authorization=logged_in['access_token']),
@@ -110,21 +90,14 @@ class CategoryTest(AuthTestCase):
     def test_delete_category(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode('utf-8'))
-        self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode('utf-8'))
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create new category
         post_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                        data=json.dumps(self.category_details))
-        self.assertEqual(post_data.status_code, 201)
 
         # delete category
         delete = self.client().delete(
@@ -134,16 +107,10 @@ class CategoryTest(AuthTestCase):
     def test_fail_add_category(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
-        self.assertEqual(reg_data['message'], 'User registered successfully.')
 
         # login with new user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode())
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # fail to create new category
         fail_data = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),

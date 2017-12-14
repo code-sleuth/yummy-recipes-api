@@ -8,12 +8,10 @@ from email_validator import validate_email, EmailNotValidError
 import unicodedata
 
 
-"""
-class User that represents the user database model
-"""
-
-
 class User(db.Model):
+    """
+    class User that represents the user database model
+    """
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), unique=True)
@@ -31,41 +29,34 @@ class User(db.Model):
         self.fullname = fullname
         self.password = generate_password_hash(password)
         self.email = email
-    """
-    Static function to return all users in the database
-    """
+
     @staticmethod
     def get_all_users():
+        """
+        Static function to return all users in the database
+        """
         return User.query.all()
 
-    """
-    save function that commits user instance to be saved to the database
-    """
-
     def save(self):
+        """save function that commits user instance to be saved to the database
+        """
         db.session.add(self)
         db.session.commit()
 
-    """
-    delete user from database
-    """
-
     def delete(self):
+        """delete user from database
+        """
         db.session.delete(self)
         db.session.commit()
 
-    """
-    Function to validate input password
-    """
-
     def validate_password(self, password):
+        """Function to validate input password
+        """
         return check_password_hash(self.password, password)
 
-    """
-    Function to validate provided email address
-    """
-
     def validate_user_email(self, email):
+        """ Function to validate provided email address
+        """
         try:
             v = validate_email(email)  # validate and get info
             email = v["email"]  # replace with normalized form
@@ -75,11 +66,10 @@ class User(db.Model):
             print(str(e))
             return False
 
-    """
-    function to check if provided string is an integer
-    """
     @staticmethod
     def is_number(username):
+        """function to check if provided string is an integer
+        """
         try:
             float(username)
             return True
@@ -92,11 +82,9 @@ class User(db.Model):
         except (TypeError, ValueError):
             return False
 
-    """
-    Generate token for user
-    """
-
     def user_generate_token(self, userid):
+        """Generate token for user
+        """
         try:
             # set up a payload with an expiration date
             payload = {
@@ -113,11 +101,10 @@ class User(db.Model):
         except Exception as ex:
             return str(ex)
 
-    """
-    Function to decode the token
-    """
     @staticmethod
     def decode_token(token):
+        """Function to decode the token
+        """
         try:
             payload = jwt.decode(token, current_app.config.get('SECRET'))
             is_blacklisted_token = BlackListToken.check_blacklist(
@@ -137,12 +124,9 @@ class User(db.Model):
         return "<User: {}>".format(self.username)
 
 
-"""
-class Category that represents the category database model
-"""
-
-
 class Category(db.Model):
+    """class Category that represents the category database model
+    """
     __tablename__ = "categories"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
@@ -157,31 +141,27 @@ class Category(db.Model):
     def __init__(self, name="", created_by=""):
         self.name = name
         self.created_by = created_by
-    """
-    function to update category name
-    """
 
     def new_category(self, name):
+        """function to update category name
+        """
         self.name = name
-    """
-    function to save category instance
-    """
 
     def save(self):
+        """function to save category instance
+        """
         db.session.add(self)
         db.session.commit()
 
-    """
-    static method to return all categories
-    """
     @staticmethod
     def get_all_categories():
+        """static method to return all categories
+        """
         return Category.query.all()
-    """
-    function to delete current category instance
-    """
 
     def delete(self):
+        """function to delete current category instance
+        """
         db.session.delete(self)
         db.session.commit()
 
@@ -189,12 +169,9 @@ class Category(db.Model):
         return "<Category: {}>".format(self.name)
 
 
-"""
-class Recipe that represents the recipe database model
-"""
-
-
 class Recipe(db.Model):
+    """class Recipe that represents the recipe database model
+    """
     __tablename__ = "recipes"
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"))
@@ -213,25 +190,21 @@ class Recipe(db.Model):
         self.details = details
         self.ingredients = ingredients
 
-    """
-    Function to return all the recipes in the database
-    """
     @staticmethod
     def get_all_recipes():
+        """Function to return all the recipes in the database
+        """
         return Recipe.query.all()
 
-    """
-    save function that commits category instance to be saved to the database
-    """
-
     def save(self):
+        """save function that commits category instance to be saved to the database
+        """
         db.session.add(self)
         db.session.commit()
-    """
-    delete function to r3move recipe from database
-    """
 
     def delete(self):
+        """delete function to r3move recipe from database
+        """
         db.session.delete(self)
         db.session.commit()
 
@@ -239,12 +212,9 @@ class Recipe(db.Model):
         return "<Recipe: {}>".format(self.name)
 
 
-"""
-Class to blacklist expired tokens
-"""
-
-
 class BlackListToken(db.Model):
+    """Class to blacklist expired tokens
+    """
     __tablename__ = 'blacklist_tokens'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     token = db.Column(db.String(500), unique=True, nullable=False)
@@ -253,18 +223,16 @@ class BlackListToken(db.Model):
 
     def __init__(self, token):
         self.token = token
-    """
-    function to save expired token
-    """
 
     def save(self):
+        """function to save expired token
+        """
         db.session.add(self)
         db.session.commit()
 
-    """
-    function to check if token is blacklisted
-    """
     def check_blacklist(auth_token):
+        """function to check if token is blacklisted
+        """
         # check whether token has been blacklisted
         res = BlackListToken.query.filter_by(token=str(auth_token)).first()
         if res:

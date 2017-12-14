@@ -34,16 +34,10 @@ class RecipeTest(AuthTestCase):
     def test_get_recipe(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
-        self.assertEqual(reg_data['message'], "User registered successfully.")
 
         # login with registered user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode())
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create category
         category = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
@@ -67,26 +61,18 @@ class RecipeTest(AuthTestCase):
     def test_search_recipe(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
-        self.assertEqual(reg_data['message'], "User registered successfully.")
 
         # login with registered user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode())
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create category
         category = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                       data=json.dumps(self.category_details))
-        self.assertEqual(category.status_code, 201)
 
         # create recipe
         recipe = self.client().post('/recipes', headers=dict(Authorization=logged_in['access_token']),
                                     data=json.dumps(self.recipe_details))
-        self.assertEqual(recipe.status_code, 201)
 
         # search for recipe
         search_recipe = self.client().get('recipes/search?q=r&limit=3&page=1',
@@ -97,29 +83,21 @@ class RecipeTest(AuthTestCase):
         self.assertEqual(search_recipe_data[0]['page_number'], 1)
         self.assertEqual(search_recipe_data[0]['total_items_returned'], 1)
 
-    def test_search_recipe(self):
+    def test_update_recipe(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
-        self.assertEqual(reg_data['message'], "User registered successfully.")
 
         # login with registered user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode())
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create category
         category = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                       data=json.dumps(self.category_details))
-        self.assertEqual(category.status_code, 201)
 
         # create recipe
         recipe = self.client().post('/recipes', headers=dict(Authorization=logged_in['access_token']),
                                     data=json.dumps(self.recipe_details))
-        self.assertEqual(recipe.status_code, 201)
 
         # update recipe
         update_recipe = self.client().put('/recipes/1', headers=dict(Authorization=logged_in['access_token']),
@@ -132,26 +110,18 @@ class RecipeTest(AuthTestCase):
     def test_delete_recipe(self):
         # register user
         reg_user = self.client().post('/auth/register', data=json.dumps(self.user_details))
-        self.assertEqual(reg_user.status_code, 201)
-        reg_data = json.loads(reg_user.data.decode())
-        self.assertEqual(reg_data['message'], "User registered successfully.")
 
         # login with registered user
         login = self.client().post('/auth/login', data=json.dumps(self.user_login))
-        self.assertEqual(login.status_code, 200)
         logged_in = json.loads(login.data.decode())
-        self.assertEqual(logged_in['message'], 'You logged in successfully.')
-        self.assertTrue(logged_in['access_token'])
 
         # create category
         category = self.client().post('/categories', headers=dict(Authorization=logged_in['access_token']),
                                       data=json.dumps(self.category_details))
-        self.assertEqual(category.status_code, 201)
 
         # create recipe
         recipe = self.client().post('/recipes', headers=dict(Authorization=logged_in['access_token']),
                                     data=json.dumps(self.recipe_details))
-        self.assertEqual(recipe.status_code, 201)
 
         # delete recipe
         delete_recipe = self.client().delete(
