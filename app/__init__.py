@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import redirect, Flask
 from flasgger import Swagger
 from instance.config import app_config
+from flask_cors import CORS
 
 # initialize sql-alchemy
 db = SQLAlchemy()
@@ -54,6 +55,7 @@ def set_app(config_name):
 
     db.init_app(app)
     swagger = Swagger(app)
+    CORS(app)
 
     # index
     @app.route('/')
@@ -71,6 +73,3 @@ def set_app(config_name):
     app.register_blueprint(recipe_blue_print)
 
     return app
-
-
-
