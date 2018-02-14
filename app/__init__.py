@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import redirect, Flask
 from flasgger import Swagger
+from flask.ext.cors import CORS
 from instance.config import app_config
-from flask_cors import CORS
+
 
 # initialize sql-alchemy
 db = SQLAlchemy()
