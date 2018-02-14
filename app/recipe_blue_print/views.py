@@ -17,7 +17,7 @@ def recipes_view():
     if request.method == 'POST':
         post_data = request.get_json(force=True)
         category_id = int(post_data['category_id'])
-        created_by = int(post_data['created_by'])
+        created_by = int(user.id)
         name = str(post_data['name'])
         details = str(post_data['details'])
         ingredients = str(post_data['ingredients'])
@@ -49,7 +49,7 @@ def recipes_view():
     elif request.method == "GET":
         try:
             # get request params
-            limit = request.args.get('limit') or 20
+            limit = request.args.get('limit') or 4
             page = request.args.get('page') or 1
 
             limit = int(limit)
@@ -107,19 +107,26 @@ def recipes_view_edit(id):
     elif request.method == "PUT":
         # get values from put request
         update_data = request.get_json(force=True)
-        category_id = int(update_data['category_id'])
+        category_id = update_data['category_id'] or 0
         name = str(update_data['name'])
         details = str(update_data['details'])
         ingredients = str(update_data['ingredients'])
 
         # set database values to the new assigned ones
-        recipe.category_id = category_id
-        recipe.name = name
-        recipe.details = details
-        recipe.ingredients = ingredients
+        if(category_id):
+            category_id = int(category_id)
+            recipe.category_id = category_id
+            recipe.name = name
+            recipe.details = details
+            recipe.ingredients = ingredients
 
-        # save and commit changes
-        recipe.save()
+            # save and commit changes
+            recipe.save()
+        else:
+            recipe.name = name
+            recipe.details = details
+            recipe.ingredients = ingredients
+            recipe.save()
 
         response = jsonify({
             'id': recipe.id,
@@ -198,6 +205,95 @@ def search_by_name():
             return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
 
+def get_recipes_for_a_category(category_id):
+    user = get_authenticated_user(request)
+    if not user:
+        return make_response(jsonify({"message": "You have no access rights"})), 403
+    if request.method == "GET":
+        # get request params
+        limit = request.args.get('limit') or 5
+        page = request.args.get('page') or 1
+
+        limit = int(limit)
+        page = int(page)
+        # get all recipes created by this user
+        recipes = Recipe.query.filter_by(category_id=category_id).filter_by(created_by=user.id).paginate(
+            per_page=limit, page=page, error_out=False)
+        res = []
+        for recipe in recipes.items:
+            obj = {
+                'id': recipe.id,
+                'category_id': recipe.category_id,
+                'name': recipe.name,
+                'details': recipe.details,
+                'ingredients': recipe.ingredients,
+                'date_created': recipe.date_created,
+                'date_modified': recipe.date_modified,
+                'created_by': recipe.created_by,
+                'per_page': recipes.per_page,
+                'page_number': recipes.page,
+                'total_items_returned': recipes.total
+            }
+            res.append(obj)
+        if res:
+            return make_response(jsonify(res)), 200
+        else:
+            return make_response(jsonify({
+                'message': 'No Items On This Page',
+                'per_page': recipes.per_page,
+                'page_number': recipes.page,
+                'total_items_returned': recipes.total
+            })), 200
+
+
+def search_by_name_for_specific_category(category_id):
+    user = get_authenticated_user(request)
+    if not user:
+        return make_response(jsonify({"message": "You have no access rights"})), 403
+
+    if request.method == "GET":
+        try:
+            # get params
+            q = request.args.get('q') or " "
+            limit = request.args.get('limit') or 5
+            page = request.args.get('page') or 1
+
+            q = str(q)
+            limit = int(limit)
+            page = int(page)
+
+            recipe_by_name = Recipe.query.filter_by(category_id=category_id).filter_by(created_by=user.id).filter(Recipe.name.ilike('%' + q + '%'))\
+                .paginate(per_page=limit, page=page, error_out=False)
+            if not recipe_by_name:
+                abort(404)
+            obj = []
+            for recipe in recipe_by_name.items:
+                rec = {
+                    'id': recipe.id,
+                    'category_id': recipe.category_id,
+                    'name': recipe.name,
+                    'details': recipe.details,
+                    'ingredients': recipe.ingredients,
+                    'date_created': recipe.date_created,
+                    'date_modified': recipe.date_modified,
+                    'created_by': recipe.created_by,
+                    'per_page': recipe_by_name.per_page,
+                    'page_number': recipe_by_name.page,
+                    'total_items_returned': recipe_by_name.total
+                }
+                obj.append(rec)
+            if not obj:
+                return make_response(jsonify({
+                    'message': 'No Content On This Page or Search Not Found',
+                    'per_page': recipe_by_name.per_page,
+                    'page_number': recipe_by_name.page,
+                    'total_items_returned': recipe_by_name.total
+                }))
+            return make_response(jsonify(obj)), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
+
+
 # Define the rule for recipes url ---> /recipes or /recipes?limit=<int:limit>&page=<int:page>
 recipe_blue_print.add_url_rule(
     '/recipes', view_func=recipes_view, methods=['POST', 'GET'])
@@ -207,3 +303,9 @@ recipe_blue_print.add_url_rule(
 # Define the rule for recipes url ---> /recipes/search?q=<sting:q>&limit=<int:limit>&page=<int:page>'
 recipe_blue_print.add_url_rule(
     '/recipes/search', view_func=search_by_name, methods=['GET'])
+
+recipe_blue_print.add_url_rule(
+    '/categories/recipes/<int:category_id>', view_func=get_recipes_for_a_category, methods=['GET'])
+
+recipe_blue_print.add_url_rule(
+    '/categories/recipes/search/<int:category_id>', view_func=search_by_name_for_specific_category, methods=['GET'])
