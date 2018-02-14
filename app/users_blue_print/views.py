@@ -20,7 +20,8 @@ def users():
 
             limit = int(limit)
             page = int(page)
-            users = User.query.paginate(per_page=limit, page=page, error_out=False)
+            users = User.query.paginate(
+                per_page=limit, page=page, error_out=False)
 
             results = []
             for user in users.items:
@@ -107,5 +108,28 @@ def edit_by_id(id):
             'password': user_data.password
         })), 200
 
+
+def get_current_user():
+    if request.method == 'GET':
+        user = get_authenticated_user(request)
+        if not user:
+            return make_response(jsonify({'message': 'you have no access rights'})), 403
+        else:
+            user_info = User.query.filter_by(id=user.id).first()
+            if not user_info:
+                abort(404)
+            else:
+                return make_response(jsonify({
+                    'id': user_info.id,
+                    'username': user_info.username,
+                    'fullname': user_info.fullname,
+                    'email': user_info.email,
+                    'password': user_info.password
+                })), 200
+
+
 users_blue_print.add_url_rule('/users', view_func=users, methods=['GET'])
-users_blue_print.add_url_rule('/users/<int:id>', view_func=edit_by_id, methods=['DELETE', 'PUT', 'GET'])
+users_blue_print.add_url_rule(
+    '/users/<int:id>', view_func=edit_by_id, methods=['DELETE', 'PUT', 'GET'])
+users_blue_print.add_url_rule(
+    '/users/info', view_func=get_current_user, methods=['GET'])
