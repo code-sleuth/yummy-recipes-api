@@ -19,10 +19,10 @@ def categories_view():
         name = str(post_data['name'])
 
         if name:
-            db_names = Category.query.filter_by(name=name)
-            for n in db_names:
-                if n.name.lower() == name.lower():
-                    return make_response(jsonify({"message": "category name already in database"})), 409
+            # db_names = Category.query.filter_by(name=name)
+            # for n in db_names:
+            #     if n.name.lower() == name.lower():
+            #         return make_response(jsonify({"message": "category name already in database"})), 409
 
             cat = Category(name=name, created_by=user.id)
             cat.save()
@@ -42,14 +42,14 @@ def categories_view():
     # get all categories
     elif request.method == "GET":
         try:
-            limit = request.args.get('limit') or 20
+            limit = request.args.get('limit') or 5
             page = request.args.get('page') or 1
 
             limit = int(limit)
             page = int(page)
 
             # GET all the categories created by this user
-            categories = Category.query.paginate(
+            categories = Category.query.filter_by(created_by=user.id).paginate(
                 per_page=limit, page=page, error_out=False)
             results = []
 
@@ -136,14 +136,14 @@ def search_category():
 
     if request.method == 'GET':
         name = request.args.get('q') or " "
-        limit = request.args.get('limit') or 20
+        limit = request.args.get('limit') or 5
         page = request.args.get('page') or 1
         try:
             name = str(name)
             limit = int(limit)
             page = int(page)
 
-            categories = Category.query.filter(Category.name.ilike('%' + name + '%')) \
+            categories = Category.query.filter_by(created_by=user.id).filter(Category.name.ilike('%' + name + '%')) \
                 .paginate(per_page=limit, page=page, error_out=False)
             if not categories:
                 abort(404)
@@ -174,6 +174,40 @@ def search_category():
             return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
 
 
+def get_categories_for_combo_box():
+    user = get_authenticated_user(request)
+    if not user:
+        return make_response(jsonify({'message': 'you have no access rights'})),
+
+    if request.method == "GET":
+        try:
+            # GET all the categories created by this user
+            categories = Category.query.filter_by(created_by=user.id)
+            results = []
+
+            for cat in categories:
+                obj = {
+                    'id': cat.id,
+                    'name': cat.name,
+                    'date_created': cat.date_created,
+                    'date_modified': cat.date_modified,
+                    'created_by': cat.created_by
+                }
+                results.append(obj)
+            if results:
+                return make_response(jsonify(results)), 200
+            else:
+                return make_response(jsonify({
+                    'message': 'No Content On This Page',
+                    'per_page': categories.per_page,
+                    'page_number': categories.page,
+                    'total_items_returned': categories.total
+                })), 200
+        except Exception:
+            return make_response(jsonify({'message': 'limit and page cannot be string values'})), 400
+
+
+
 # Define the rule for the categories url --->  /categories or /categories?limit=<int:limit>&page=<int:page>
 category_blue_print.add_url_rule(
     '/categories', view_func=categories_view, methods=['POST', 'GET'])
@@ -183,3 +217,6 @@ category_blue_print.add_url_rule(
 # Define the rule for the categories url ---> /categories/<string:wild_card>
 category_blue_print.add_url_rule(
     '/categories/search', view_func=search_category, methods=['GET'])
+
+category_blue_print.add_url_rule(
+    '/categories/combo', view_func=get_categories_for_combo_box, methods=['GET'])
