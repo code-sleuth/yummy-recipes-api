@@ -45,7 +45,7 @@ class CategoryTest(AuthTestCase):
         self.assertEqual(get_category.status_code, 200)
         get_category_data = json.loads(get_category.data.decode('utf-8'))
         # check for defaults for pagination
-        self.assertEqual(get_category_data[0]['per_page'], 20)
+        self.assertEqual(get_category_data[0]['per_page'], 5)
         self.assertEqual(get_category_data[0]['page_number'], 1)
         self.assertEqual(get_category_data[0]['total_items_returned'], 1)
 

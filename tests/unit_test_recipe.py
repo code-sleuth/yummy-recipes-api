@@ -54,7 +54,7 @@ class RecipeTest(AuthTestCase):
             '/recipes', headers=dict(Authorization=logged_in['access_token']))
         self.assertEqual(get_recipe.status_code, 200)
         get_recipe_data = json.loads(get_recipe.data.decode('utf-8'))
-        self.assertEqual(get_recipe_data[0]['per_page'], 20)
+        self.assertEqual(get_recipe_data[0]['per_page'], 4)
         self.assertEqual(get_recipe_data[0]['page_number'], 1)
         self.assertEqual(get_recipe_data[0]['total_items_returned'], 1)
 
