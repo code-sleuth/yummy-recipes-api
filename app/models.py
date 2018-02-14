@@ -88,7 +88,7 @@ class User(db.Model):
         try:
             # set up a payload with an expiration date
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=60),
+                'exp': datetime.utcnow() + timedelta(minutes=(60 * 60 * 60)),
                 'iat': datetime.utcnow(),
                 'sub': userid
             }
@@ -129,7 +129,7 @@ class Category(db.Model):
     """
     __tablename__ = "categories"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(100))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(
     ), onupdate=db.func.current_timestamp())
