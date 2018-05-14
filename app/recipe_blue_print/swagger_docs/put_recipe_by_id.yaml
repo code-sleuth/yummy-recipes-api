@@ -1,0 +1,108 @@
+Update selected recipe by id
+Update selected recipe by id
+---
+tags:
+  - "Recipe"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    type: "string"
+    description: "JWT authentication"
+  - name: "id"
+    in: "path"
+    required: true
+    description: "Recipe ID"
+    type: "integer"
+  - in: "body"
+    name: "body"
+    description: "The new details to update the recipe"
+    required: true
+    schema:
+      $ref: "#/definitions/recipe-update"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  200:
+    description: "Recipe with given id updated successfully"
+    schema:
+      $ref: "#/definitions/recipes"
+  400:
+    description: "Page not found"
+    schema:
+      $ref: "#/definitions/invalid_query_type"
+definitions:
+  recipe-update:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "New recipe name"
+      details:
+        type: "string"
+        example: "New Details"
+      ingredients:
+        type: "string"
+        example: "New ingredients"
+      category_id:
+        type: "int"
+        example: 1
+  recipe:
+    type: "object"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        example: 1
+      category_id:
+        type: "int"
+        example: 1
+      created_by:
+        type: "int"
+        example: 1
+      name:
+        type: "string"
+        example: "Rice Spice Recipe"
+      details:
+        type: "string"
+        example: "Some where in the tropics.."
+      ingredients:
+        type: "string"
+        example: "chili peppers, green peppers"
+      date_created:
+        type: "string"
+        format: "date-time"
+      date_modified on:
+        type: "string"
+        format: "date-time"
+  recipes:
+    type: "array"
+    items:
+      $ref: "#/definitions/recipe"
+  invalid_query_type:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "Page not found"
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"

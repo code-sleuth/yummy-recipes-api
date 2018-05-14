@@ -1,0 +1,67 @@
+Deletes a single Category by id
+Deletes a single Category identified by id in the url path
+---
+tags:
+  - "Category"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    description: "JWT token authentication"
+    type: "string"
+  - name: "id"
+    in: "path"
+    description: "ID of category to Delete"
+    required: true
+    type: "integer"
+    format: "int64"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  200:
+    description: "Category deleted successfully."
+    schema:
+      $ref: "#/definitions/category-deleted"
+  404:
+    description: "The category does not exist"
+    schema:
+      $ref: "#/definitions/non_existent_category"
+definitions:
+  category-deleted:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        example: "Category deleted successfully."
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"
+  category-deleted:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "Category successfully deleted"
+  non_existent_category:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "The category does not exist"

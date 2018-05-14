@@ -1,0 +1,13 @@
+[run]
+omit=
+    */venv/*
+    */migrations/*
+    *__pycache__/*
+    */cover/*
+    */asyncio/*
+    */concurrent/*
+    */ctypes/*
+    */encodings/*
+    */html/*
+    */http/*
+    */multiprocessing/*

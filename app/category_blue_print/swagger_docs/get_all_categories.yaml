@@ -1,0 +1,94 @@
+Returns all categories in the database
+Returns all categories in the database
+---
+tags:
+  - "Category"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    type: "string"
+    description: "JWT token authentication"
+  - name: "page"
+    in: "query"
+    description: "Pagination current page"
+    type: "integer"
+  - name: "limit"
+    in: "query"
+    description: "Pagination number of categories per page"
+    type: "integer"
+responses:
+  403:
+    description: "You have no access rights"
+    schema:
+      $ref: "#/definitions/unauthorized"
+  401:
+    description: "You are logged out"
+    schema:
+      $ref: "#/definitions/logged_out"
+  200:
+    description: "returns all the categories"
+    schema:
+      $ref: "#/definitions/categories"
+  400:
+    description: "Page not found"
+    schema:
+      $ref: "#/definitions/invalid_query_type"
+securityDefinitions:
+    Bearer:
+        type: apiKey
+        name: Authorization
+        in: header
+security:
+  Bearer: []
+definitions:
+  category-array:
+    type: "object"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+        example: "Rice Category"
+      date_created:
+        type: "string"
+        format: "date-time"
+      date_modified:
+        type: "string"
+        format: "date-time"
+      per_page:
+        type: "int"
+        example: 20
+      page_number:
+        type: "int"
+        example: 1
+      total_items_returned:
+        type: "int"
+        example: 1
+  categories:
+    type: "array"
+    items:
+      $ref: "#/definitions/category-array"
+  invalid_query_type:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "limit and page query parameters should be integers"
+  unauthorized:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You have no access rights"
+  logged_out:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+        default: "You are already logged out"

@@ -1,0 +1,57 @@
+Logs out current user
+Blacklists the Json Web Token in the header
+---
+tags:
+  - "User"
+produces:
+  - "application/json"
+parameters:
+  - name: "Authorization"
+    in: "header"
+    required: true
+    description: "The Json Web Token to be blacklisted"
+    type: "string"
+responses:
+  200:
+    description: "successfully logged out"
+    schema:
+      $ref: "#/definitions/logout_ok"
+  401:
+    description: "You are already logged out"
+    schema:
+      $ref: "#/definitions/already_logged_out"
+  403:
+    description: "You have no access rights. Provide a valid authorization token"
+    schema:
+      $ref: "#/definitions/no_token"
+definitions:
+  logout_ok:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+        enum: ["success", "fail"]
+      message:
+        type: "string"
+        enum:
+          - "successfully logged out"
+          - "Error while logging out"
+  already_logged_out:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+        default: "fail"
+      message:
+        type: "string"
+        enum:
+          - "You are already logged out"
+  no_token:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+        default: "fail"
+      message:
+        type: "string"
+        default: "You have no access rights"
